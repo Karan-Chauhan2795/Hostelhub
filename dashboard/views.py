@@ -7,6 +7,8 @@ from accounts.mixins import RoleRequiredMixin
 
 class DashboardRedirectView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
         if request.user.role == "ADMIN":
             return redirect("dashboard:admin_dashboard")
         if request.user.role == "WARDEN":
