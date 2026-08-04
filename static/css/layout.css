@@ -213,6 +213,18 @@
   padding: 10px 12px;
 }
 
+.auth-note {
+  margin-top: 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: var(--primary-dark);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 14px;
+  text-align: center;
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: 260px 1fr;

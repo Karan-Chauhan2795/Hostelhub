@@ -18,6 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  document.querySelectorAll("[data-reset-notice]").forEach((button) => {
+    button.addEventListener("click", () => {
+      window.alert("Password reset email service will be available in the next version.");
+    });
+  });
+
   document.querySelectorAll("[data-table-search]").forEach((input) => {
     const table = document.getElementById(input.dataset.tableSearch);
     if (!table) {
