@@ -1,3 +1,19 @@
 <aside class="sidebar">
-  <p>Navigation placeholder</p>
+  <a class="brand" href="{% url 'dashboard:home' %}">
+    <span>HH</span>
+    <strong>HostelHub</strong>
+  </a>
+  <nav class="side-nav">
+    <a href="{% url 'dashboard:home' %}">Dashboard</a>
+    {% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}
+      <a href="{% url 'students:student_management' %}">Students</a>
+      <a href="{% url 'rooms:room_management' %}">Rooms</a>
+    {% endif %}
+    <a href="{% url 'complaints:complaint_management' %}">Complaints</a>
+    <a href="{% url 'accounts:profile' %}">Profile</a>
+  </nav>
+  <div class="sidebar-user">
+    <span>{{ request.user.get_role_display }}</span>
+    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+  </div>
 </aside>

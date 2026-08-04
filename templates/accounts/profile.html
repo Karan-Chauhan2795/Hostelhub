@@ -1,8 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Profile{% endblock %}
+{% block title %}Student Profile | HostelHub{% endblock %}
 {% block content %}
-<div class="page-card">
-  <h1>Profile</h1>
-  <p>This is a placeholder page for the Profile feature.</p>
-</div>
+<section class="profile-grid">
+  <article class="card profile-card">
+    <div class="avatar">{{ profile_data.full_name|slice:":1" }}</div>
+    <div>
+      <p class="eyebrow">{{ profile_data.role }}</p>
+      <h2>{{ profile_data.full_name }}</h2>
+      <p>{{ profile_data.email }}</p>
+    </div>
+  </article>
+  <article class="card">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">Hostel Record</p>
+        <h2>Student Profile</h2>
+      </div>
+    </div>
+    <dl class="detail-list">
+      <div><dt>Username</dt><dd>{{ request.user.username }}</dd></div>
+      <div><dt>Role</dt><dd>{{ profile_data.role }}</dd></div>
+      <div><dt>Contact</dt><dd>{{ profile_data.contact }}</dd></div>
+      <div><dt>Room</dt><dd>{{ profile_data.room }}</dd></div>
+      <div><dt>Phone</dt><dd>{{ profile_data.phone }}</dd></div>
+      <div><dt>Guardian</dt><dd>{{ profile_data.guardian }}</dd></div>
+    </dl>
+  </article>
+</section>
 {% endblock %}

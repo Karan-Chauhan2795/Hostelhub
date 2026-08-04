@@ -1,34 +1,17 @@
-from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
+from django.views.generic import TemplateView
 
-from .forms import RoomForm
-from .models import Room
-
-
-class RoomListView(ListView):
-    model = Room
-    template_name = "rooms/room_list.html"
+from accounts.mixins import RoleRequiredMixin
 
 
-class RoomDetailView(DetailView):
-    model = Room
-    template_name = "rooms/room_detail.html"
+class RoomManagementView(RoleRequiredMixin, TemplateView):
+    template_name = "rooms/room_management.html"
+    allowed_roles = ("ADMIN", "WARDEN")
 
-
-class RoomCreateView(CreateView):
-    model = Room
-    form_class = RoomForm
-    template_name = "rooms/room_create.html"
-
-
-class RoomUpdateView(UpdateView):
-    model = Room
-    form_class = RoomForm
-    template_name = "rooms/room_update.html"
-
-
-class RoomAllocationView(TemplateView):
-    template_name = "rooms/room_allocation.html"
-
-
-class RoomTransferView(TemplateView):
-    template_name = "rooms/room_transfer.html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["rooms"] = [
+            {"number": "A-101", "type": "Double", "status": "Occupied", "capacity": "2/2"},
+            {"number": "B-204", "type": "Triple", "status": "Partially Occupied", "capacity": "1/2"},
+            {"number": "C-305", "type": "Single", "status": "Vacant", "capacity": "0/1"},
+        ]
+        return context

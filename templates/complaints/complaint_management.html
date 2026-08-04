@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Complaint Management | HostelHub{% endblock %}
+{% block content %}
+<section class="card">
+    <div class="section-header">
+        <div>
+            <p class="eyebrow">Support Desk</p>
+            <h2>Complaint Management</h2>
+        </div>
+        <input type="search" class="search-box" data-table-search="complaints-table" placeholder="Search complaints">
+    </div>
+    <table class="data-table" id="complaints-table">
+        <thead><tr><th>ID</th><th>Student</th><th>Issue</th><th>Status</th></tr></thead>
+        <tbody>
+            {% for complaint in complaints %}
+            <tr><td>{{ complaint.id }}</td><td>{{ complaint.student }}</td><td>{{ complaint.issue }}</td><td><span class="status-pill">{{ complaint.status }}</span></td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

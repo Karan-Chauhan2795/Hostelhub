@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | HostelHub{% endblock %}
+{% block content %}
+<section class="hero-card card">
+    <div>
+        <p class="eyebrow">Admin Dashboard</p>
+        <h2>Administration Overview</h2>
+        <p>Daily hostel operations summary for the current academic session.</p>
+    </div>
+</section>
+<section class="stats-grid">
+    {% for item in stats %}
+    <article class="card stat-card">
+        <h3>{{ item.title }}</h3>
+        <div class="stat-value">{{ item.value }}</div>
+        <span class="stat-change">{{ item.change }}</span>
+    </article>
+    {% endfor %}
+</section>
+<section class="page-grid">
+    <div class="card">
+        <div class="section-header">
+            <h3>Recent Students</h3>
+            <a href="{% url 'students:student_management' %}" class="text-link">View all</a>
+        </div>
+        <table class="data-table">
+            <thead><tr><th>Name</th><th>Room</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for student in students %}
+                <tr><td>{{ student.name }}</td><td>{{ student.room }}</td><td><span class="status-pill">{{ student.status }}</span></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card">
+        <div class="section-header">
+            <h3>Room Status</h3>
+            <a href="{% url 'rooms:room_management' %}" class="text-link">View rooms</a>
+        </div>
+        <ul class="list">
+            {% for room in rooms %}
+            <li><span>{{ room.number }}</span><strong>{{ room.occupancy }}</strong></li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+{% endblock %}

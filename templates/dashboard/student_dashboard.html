@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard | HostelHub{% endblock %}
+{% block content %}
+<section class="hero-card card">
+    <div>
+        <p class="eyebrow">Student Dashboard</p>
+        <h2>Welcome, {{ request.user.get_full_name|default:request.user.username }}</h2>
+        <p>Your hostel dashboard with fee, room, and notice updates.</p>
+    </div>
+</section>
+<section class="stats-grid">
+    {% for item in stats %}
+    <article class="card stat-card">
+        <h3>{{ item.title }}</h3>
+        <div class="stat-value">{{ item.value }}</div>
+        <span class="stat-change">{{ item.change }}</span>
+    </article>
+    {% endfor %}
+</section>
+<section class="card">
+    <h3>Announcements</h3>
+    <ul class="list">
+        {% for notice in announcements %}
+        <li>{{ notice }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

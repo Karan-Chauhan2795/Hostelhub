@@ -8,14 +8,18 @@
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/layout.css' %}">
 </head>
-<body>
-  {% include "components/navbar.html" %}
-  {% include "components/sidebar.html" %}
-  <main class="main-content">
+<body class="{% if user.is_authenticated %}app-shell{% else %}auth-shell{% endif %}">
+  {% if user.is_authenticated %}
+    {% include "components/sidebar.html" %}
+    {% include "components/navbar.html" %}
+  {% endif %}
+  <main class="{% if user.is_authenticated %}main-content{% else %}auth-content{% endif %}">
     {% include "components/messages.html" %}
     {% block content %}{% endblock %}
   </main>
-  {% include "components/footer.html" %}
+  {% if user.is_authenticated %}
+    {% include "components/footer.html" %}
+  {% endif %}
   <script src="{% static 'js/main.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>

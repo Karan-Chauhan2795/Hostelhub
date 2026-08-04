@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Room Management | HostelHub{% endblock %}
+{% block content %}
+<section class="card">
+    <div class="section-header">
+        <div>
+            <p class="eyebrow">Allocation</p>
+            <h2>Room Management</h2>
+        </div>
+        <input type="search" class="search-box" data-table-search="rooms-table" placeholder="Search rooms">
+    </div>
+    <table class="data-table" id="rooms-table">
+        <thead><tr><th>Room No.</th><th>Type</th><th>Status</th><th>Capacity</th></tr></thead>
+        <tbody>
+            {% for room in rooms %}
+            <tr><td>{{ room.number }}</td><td>{{ room.type }}</td><td><span class="status-pill">{{ room.status }}</span></td><td>{{ room.capacity }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

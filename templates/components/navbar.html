@@ -1,6 +1,10 @@
 <header class="navbar">
-  <h1>HostelHub</h1>
-  <nav>
-    <a href="{% url 'dashboard:dashboard' %}">Dashboard</a>
+  <div>
+    <p class="eyebrow">HostelHub</p>
+    <h1>{% block page_heading %}{{ request.user.get_role_display }} Portal{% endblock %}</h1>
+  </div>
+  <nav class="top-actions">
+    <a href="{% url 'accounts:profile' %}">{{ request.user.username }}</a>
+    <a href="{% url 'accounts:logout' %}" class="btn btn-secondary">Logout</a>
   </nav>
 </header>

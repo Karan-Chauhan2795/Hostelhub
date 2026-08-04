@@ -1,31 +1,17 @@
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import TemplateView
 
-from .forms import StudentForm
-from .models import Student
-
-
-class StudentListView(ListView):
-    model = Student
-    template_name = "students/student_list.html"
+from accounts.mixins import RoleRequiredMixin
 
 
-class StudentDetailView(DetailView):
-    model = Student
-    template_name = "students/student_detail.html"
+class StudentManagementView(RoleRequiredMixin, TemplateView):
+    template_name = "students/student_management.html"
+    allowed_roles = ("ADMIN", "WARDEN")
 
-
-class StudentCreateView(CreateView):
-    model = Student
-    form_class = StudentForm
-    template_name = "students/student_create.html"
-
-
-class StudentUpdateView(UpdateView):
-    model = Student
-    form_class = StudentForm
-    template_name = "students/student_update.html"
-
-
-class StudentDeleteView(DeleteView):
-    model = Student
-    template_name = "students/student_delete.html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["students"] = [
+            {"name": "Aarav Mehta", "roll": "220101", "course": "MCA", "room": "A-101"},
+            {"name": "Sneha Verma", "roll": "220102", "course": "MCA", "room": "B-204"},
+            {"name": "Rajat Kumar", "roll": "220103", "course": "MCA", "room": "C-305"},
+        ]
+        return context
