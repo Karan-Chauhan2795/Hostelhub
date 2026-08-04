@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, View
 
-from .forms import LoginForm
+from .forms import LoginForm, StudentSignupForm
 from .mixins import RoleRequiredMixin
 
 User = get_user_model()
@@ -72,6 +72,23 @@ class LogoutView(View):
         logout(request)
         messages.info(request, "You have been logged out.")
         return redirect("accounts:login")
+
+
+class StudentSignupView(View):
+    template_name = "accounts/signup.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard:home")
+        return render(request, self.template_name, {"form": StudentSignupForm()})
+
+    def post(self, request, *args, **kwargs):
+        form = StudentSignupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Student account created successfully. Please login.")
+            return redirect("accounts:login")
+        return render(request, self.template_name, {"form": form})
 
 
 class ForgotPasswordView(TemplateView):

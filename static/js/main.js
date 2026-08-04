@@ -1,4 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("[data-toggle-password]").forEach((button) => {
+    const input = document.getElementById(button.dataset.togglePassword);
+    if (!input) {
+      return;
+    }
+
+    button.addEventListener("click", () => {
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      button.textContent = isHidden ? "Hide" : "Show";
+    });
+  });
+
+  document.querySelectorAll("[data-auth-notice]").forEach((button) => {
+    button.addEventListener("click", () => {
+      window.alert("Google Authentication will be available in the next version.");
+    });
+  });
+
   document.querySelectorAll("[data-table-search]").forEach((input) => {
     const table = document.getElementById(input.dataset.tableSearch);
     if (!table) {

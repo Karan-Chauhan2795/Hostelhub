@@ -1,31 +1,48 @@
 {% extends "base.html" %}
-{% load static %}
 {% block title %}Login | HostelHub{% endblock %}
 {% block content %}
-<div class="auth-page">
+<div class="auth-page auth-page-compact">
     <div class="auth-card">
         <div class="auth-brand">
-            <h1>HostelHub</h1>
-            <p>Secure hostel management access</p>
+            <div class="auth-logo">HH</div>
+            <p class="eyebrow">HostelHub</p>
+            <h1>Login</h1>
+            <p>Access your hostel management dashboard securely.</p>
         </div>
         <form method="post" class="auth-form">
             {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+            {% endif %}
             <div class="field">
                 <label for="id_identifier">Username or Email</label>
                 {{ form.identifier }}
+                {{ form.identifier.errors }}
             </div>
-            <div class="field">
+            <div class="field password-field">
                 <label for="id_password">Password</label>
-                {{ form.password }}
+                <div class="password-control">
+                    {{ form.password }}
+                    <button type="button" class="password-toggle" data-toggle-password="id_password">Show</button>
+                </div>
+                {{ form.password.errors }}
             </div>
-            <div class="field-inline">
-                {{ form.remember_me }}
-                <label for="id_remember_me">Remember me</label>
+            <div class="auth-row">
+                <div class="field-inline">
+                    {{ form.remember_me }}
+                    <label for="id_remember_me">Remember Me</label>
+                </div>
+                <a href="{% url 'accounts:forgot_password' %}" class="text-link">Forgot Password?</a>
             </div>
-            <button type="submit" class="btn btn-primary">Sign In</button>
+            <button type="submit" class="btn btn-primary btn-full">Login</button>
         </form>
+        <div class="or-divider"><span>OR</span></div>
+        <button type="button" class="btn google-btn btn-full" data-auth-notice>
+            Continue with Google
+        </button>
         <div class="auth-links">
-            <a href="{% url 'accounts:forgot_password' %}">Forgot password?</a>
+            <span>Don't have an account?</span>
+            <a href="{% url 'accounts:signup' %}">Create Student Account</a>
         </div>
     </div>
 </div>

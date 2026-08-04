@@ -22,3 +22,26 @@ class LoginRedirectTests(TestCase):
                 )
                 self.assertEqual(response.status_code, 302)
                 self.assertEqual(response.headers["Location"], expected_path)
+
+    def test_student_signup_creates_student_and_redirects_to_login(self):
+        response = self.client.post(
+            "/accounts/create-student-account/",
+            {
+                "first_name": "Nisha",
+                "last_name": "Patel",
+                "username": "nisha_student",
+                "email": "nisha@example.com",
+                "phone_number": "+91 90000 11111",
+                "password1": "StrongPass123!",
+                "password2": "StrongPass123!",
+            },
+            HTTP_HOST="localhost",
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers["Location"], "/accounts/login/")
+
+        User = get_user_model()
+        user = User.objects.get(username="nisha_student")
+        self.assertEqual(user.role, User.Role.STUDENT)
+        self.assertTrue(user.check_password("StrongPass123!"))

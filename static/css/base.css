@@ -57,6 +57,11 @@ p {
   padding: 0 18px;
   font-weight: 700;
   cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
 }
 
 .btn-primary {
@@ -71,6 +76,10 @@ p {
 .btn-secondary {
   background: #edf4ff;
   color: var(--primary-dark);
+}
+
+.btn-full {
+  width: 100%;
 }
 
 .card {
