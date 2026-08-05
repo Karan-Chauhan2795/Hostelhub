@@ -8,19 +8,23 @@
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/layout.css' %}">
 </head>
-<body class="{% if user.is_authenticated %}app-shell{% else %}auth-shell{% endif %}">
+<body class="{% block body_class %}{% if user.is_authenticated %}app-shell{% else %}auth-shell{% endif %}{% endblock %}">
   {% if user.is_authenticated %}
     {% include "components/sidebar.html" %}
     {% include "components/navbar.html" %}
   {% endif %}
-  <main class="{% if user.is_authenticated %}main-content{% else %}auth-content{% endif %}">
+  {% if landing_page %}{% include "components/public_navbar.html" %}{% endif %}
+  <main class="{% block main_class %}{% if user.is_authenticated %}main-content{% else %}auth-content{% endif %}{% endblock %}">
     {% include "components/messages.html" %}
     {% block content %}{% endblock %}
   </main>
-  {% if user.is_authenticated %}
+  {% if landing_page %}
+    {% include "components/public_footer.html" %}
+  {% elif user.is_authenticated %}
     {% include "components/footer.html" %}
   {% endif %}
   <script src="{% static 'js/main.js' %}"></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

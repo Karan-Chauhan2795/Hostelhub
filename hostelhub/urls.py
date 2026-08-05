@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import include, path
 
 urlpatterns = [
@@ -16,3 +18,8 @@ urlpatterns = [
     path("reports/", include("reports.urls", namespace="reports")),
     path("settings/", include("settings_app.urls", namespace="settings_app")),
 ]
+
+# Development convenience: serve assets directly while DEBUG is enabled.
+# In production, the web server/CDN should serve the collected static files.
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.BASE_DIR / "static")

@@ -5,6 +5,22 @@ from django.views.generic import TemplateView
 from accounts.mixins import RoleRequiredMixin
 
 
+class LandingPageView(TemplateView):
+    """Public marketing page for HostelHub."""
+
+    template_name = "landing.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["landing_page"] = True
+        context["rooms"] = [
+            {"name": "Twin Studio", "price": "₹8,500", "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=900&q=85", "features": "2 residents · Ensuite bath"},
+            {"name": "Premium Single", "price": "₹12,000", "image": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85", "features": "Private room · Study-ready"},
+            {"name": "Four-Bed Suite", "price": "₹6,500", "image": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=900&q=85", "features": "4 residents · Best value"},
+        ]
+        return context
+
+
 class DashboardRedirectView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:

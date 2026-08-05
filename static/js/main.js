@@ -1,4 +1,28 @@
 document.addEventListener("DOMContentLoaded", () => {
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+
+  const publicNav = document.querySelector("[data-public-nav]");
+  const navToggle = document.querySelector("[data-nav-toggle]");
+  if (publicNav) {
+    const setNavState = () => publicNav.classList.toggle("is-scrolled", window.scrollY > 8);
+    setNavState();
+    window.addEventListener("scroll", setNavState, { passive: true });
+  }
+  if (publicNav && navToggle) {
+    navToggle.addEventListener("click", () => {
+      const isOpen = publicNav.classList.toggle("menu-open");
+      navToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+    publicNav.querySelectorAll("[data-nav-links] a").forEach((link) => {
+      link.addEventListener("click", () => {
+        publicNav.classList.remove("menu-open");
+        navToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+
   document.querySelectorAll("[data-toggle-password]").forEach((button) => {
     const input = document.getElementById(button.dataset.togglePassword);
     if (!input) {

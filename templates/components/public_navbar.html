@@ -1,0 +1,16 @@
+<header class="public-nav" data-public-nav>
+  <div class="container nav-inner">
+    <a class="public-brand" href="{% url 'dashboard:landing' %}" aria-label="HostelHub home">
+      <span class="brand-mark"><i data-lucide="building-2" aria-hidden="true"></i></span>
+      <span>HostelHub</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-nav-toggle><i data-lucide="menu"></i></button>
+    <nav class="public-links" aria-label="Primary navigation" data-nav-links>
+      <a href="#home">Home</a><a href="#rooms">Rooms</a><a href="#facilities">Facilities</a><a href="#gallery">Gallery</a><a href="#about">About</a><a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="nav-login" href="{% url 'accounts:login' %}">Login</a>
+      <a class="btn btn-primary nav-cta" href="{% url 'accounts:signup' %}">Create Student Account</a>
+    </div>
+  </div>
+</header>

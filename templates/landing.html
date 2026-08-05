@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}HostelHub | Better student living{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+{% block main_class %}landing-main{% endblock %}
+{% block content %}
+<section class="landing-hero" id="home">
+  <div class="container hero-layout">
+    <div class="hero-copy reveal">
+      <p class="hero-kicker"><span></span> Student living, thoughtfully managed</p>
+      <h1>Feel at home.<br><em>Achieve more.</em></h1>
+      <p class="hero-description">A premium, secure living experience designed around the way students study, connect and grow.</p>
+      <div class="hero-actions"><a href="#rooms" class="btn btn-primary btn-large">Explore rooms <i data-lucide="arrow-up-right"></i></a><a href="#facilities" class="btn btn-ghost btn-large">Discover HostelHub</a></div>
+      <div class="hero-proof"><div class="avatar-group"><span>AM</span><span>SK</span><span>RK</span><span>+</span></div><p><strong>500+ residents</strong><br>already feel at home here</p></div>
+    </div>
+    <div class="hero-image-wrap reveal">
+      <img class="hero-image" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1500&q=90" alt="A bright, modern hostel lounge">
+      <div class="availability-card"><div class="availability-icon"><i data-lucide="calendar-check"></i></div><div><span>Now accepting</span><strong>2026–27 applications</strong></div><i class="availability-arrow" data-lucide="arrow-up-right"></i></div>
+      <div class="hero-shape"></div>
+    </div>
+  </div>
+  <div class="container hero-meta"><span>Scroll to explore</span><i data-lucide="arrow-down"></i><span class="hero-meta-line"></span><span>Established 2014 · Pune, India</span></div>
+</section>
+
+<section class="trust-strip"><div class="container"><p>Everything you need for a <strong>better student life.</strong></p><div class="trust-items"><span><i data-lucide="shield-check"></i> 24/7 security</span><span><i data-lucide="wifi"></i> High-speed Wi-Fi</span><span><i data-lucide="heart-handshake"></i> Supportive community</span></div></div></section>
+
+<section class="section rooms-section" id="rooms"><div class="container"><div class="section-heading"><div><p class="eyebrow">Spaces made for you</p><h2>Find your <em>perfect fit.</em></h2></div><a href="{% url 'accounts:signup' %}" class="text-link arrow-link">View all rooms <i data-lucide="arrow-right"></i></a></div><div class="room-grid">{% for room in rooms %}<article class="room-card"><div class="room-image"><img src="{{ room.image }}" alt="{{ room.name }} room"><span>Available</span><button type="button" aria-label="Save {{ room.name }}"><i data-lucide="heart"></i></button></div><div class="room-details"><div><h3>{{ room.name }}</h3><p>{{ room.features }}</p></div><div class="room-price"><strong>{{ room.price }}</strong><span>/ month</span></div></div><a href="{% url 'accounts:signup' %}" class="room-link">View room <i data-lucide="arrow-up-right"></i></a></article>{% endfor %}</div></div></section>
+
+<section class="section feature-section" id="facilities"><div class="container feature-layout"><div class="feature-visual"><img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=85" alt="Students working together in a bright study space"><div class="image-caption"><i data-lucide="sparkles"></i><span>Designed for<br><strong>your best days</strong></span></div></div><div class="feature-copy"><p class="eyebrow">More than a place to stay</p><h2>Everything you need to <em>thrive.</em></h2><p>HostelHub brings together comfort, convenience, and community — so you can focus on making the most of university life.</p><div class="facility-list"><div><i data-lucide="book-open-check"></i><span><strong>Focused study spaces</strong><small>Quiet zones, group rooms and 24/7 access</small></span></div><div><i data-lucide="utensils"></i><span><strong>Wholesome everyday dining</strong><small>Fresh menus made for student schedules</small></span></div><div><i data-lucide="dumbbell"></i><span><strong>Wellbeing built in</strong><small>Fitness, recreation and community events</small></span></div></div><a href="#gallery" class="btn btn-secondary">Explore facilities <i data-lucide="arrow-right"></i></a></div></div></section>
+
+<section class="gallery-section" id="gallery"><div class="container"><div class="section-heading"><div><p class="eyebrow">A glimpse of life here</p><h2>Made for <em>memories.</em></h2></div><p class="section-intro">Spaces that make everyday campus life feel a little more extraordinary.</p></div><div class="gallery-grid"><img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=900&q=85" alt="Warmly lit hostel cafe"><img src="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=900&q=85" alt="Students at a campus gathering"><img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=85" alt="Students enjoying time together"></div></div></section>
+
+<section class="quote-section" id="about"><div class="container quote-content"><i data-lucide="quote"></i><blockquote>“HostelHub gave me more than a room. It gave me the space, support and friends to make university unforgettable.”</blockquote><div><span class="quote-avatar">NP</span><span><strong>Nisha Patel</strong><small>Resident since 2023</small></span></div></div></section>
+
+<section class="cta-section"><div class="container cta-panel"><div><p class="eyebrow">Your next chapter starts here</p><h2>Ready to find your <em>place?</em></h2><p>Applications for the upcoming academic year are now open.</p></div><a href="{% url 'accounts:signup' %}" class="btn btn-light btn-large">Create Student Account <i data-lucide="arrow-up-right"></i></a></div></section>
+{% endblock %}
