@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import redirect, render
@@ -45,10 +46,7 @@ class LoginView(View):
 
             if authenticated_user is not None:
                 login(request, authenticated_user)
-                if form.cleaned_data["remember_me"]:
-                    request.session.set_expiry(60 * 60 * 24 * 30)
-                else:
-                    request.session.set_expiry(0)
+                request.session.set_expiry(settings.SESSION_COOKIE_AGE)
                 messages.success(
                     request,
                     f"Welcome back, {authenticated_user.get_full_name() or authenticated_user.username}!",
@@ -68,10 +66,16 @@ class LoginView(View):
 
 
 class LogoutView(View):
+    http_method_names = ["get", "post"]
+
     def get(self, request, *args, **kwargs):
-        logout(request)
-        messages.info(request, "You have been logged out.")
-        return redirect("accounts:login")
+        return redirect("dashboard:home" if request.user.is_authenticated else "dashboard:landing")
+
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            logout(request)
+            messages.info(request, "You have been logged out.")
+        return redirect("dashboard:landing")
 
 
 class StudentSignupView(View):

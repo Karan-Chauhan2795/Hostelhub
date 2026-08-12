@@ -46,11 +46,66 @@ document.addEventListener("DOMContentLoaded", () => {
       updateSidebarToggle(isCollapsed);
     });
 
-    sidebar.querySelectorAll(".side-nav").forEach((navigationArea) => {
-      navigationArea.addEventListener("pointerenter", () => setHoverPreview(true));
-    });
+    sidebar.addEventListener("pointerenter", () => setHoverPreview(true));
     sidebar.addEventListener("pointerleave", () => setHoverPreview(false));
     hoverPreviewQuery.addEventListener("change", () => setHoverPreview(false));
+  }
+
+  const logoutModal = document.querySelector("[data-logout-modal]");
+  const logoutTriggers = document.querySelectorAll("[data-logout-trigger]");
+  if (logoutModal && logoutTriggers.length) {
+    const dialog = logoutModal.querySelector("[role='dialog']");
+    const cancelButton = logoutModal.querySelector("[data-logout-cancel]");
+    const focusableSelector = "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+    let lastFocusedElement = null;
+
+    const closeLogoutModal = () => {
+      logoutModal.hidden = true;
+      if (lastFocusedElement) {
+        lastFocusedElement.focus();
+      }
+    };
+
+    const openLogoutModal = (trigger) => {
+      lastFocusedElement = trigger;
+      logoutModal.hidden = false;
+      requestAnimationFrame(() => cancelButton.focus());
+    };
+
+    logoutTriggers.forEach((trigger) => {
+      trigger.addEventListener("click", () => openLogoutModal(trigger));
+    });
+    cancelButton.addEventListener("click", closeLogoutModal);
+    logoutModal.addEventListener("click", (event) => {
+      if (event.target === logoutModal) {
+        closeLogoutModal();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (logoutModal.hidden) {
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeLogoutModal();
+        return;
+      }
+      if (event.key === "Tab") {
+        const focusableElements = Array.from(dialog.querySelectorAll(focusableSelector));
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements.at(-1);
+        if (!firstElement || !lastElement) {
+          return;
+        }
+        if (event.shiftKey && document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    });
   }
 
   const profileMenu = document.querySelector("[data-profile-menu]");

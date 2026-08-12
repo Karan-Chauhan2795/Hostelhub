@@ -14,7 +14,7 @@
       </button>
       <div class="profile-dropdown" data-profile-dropdown>
         <a href="{% url 'accounts:profile' %}"><i class="fa-regular fa-user"></i>My profile</a>
-        <a href="{% url 'accounts:logout' %}"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</a>
+        <button class="profile-dropdown-action" type="button" data-logout-trigger aria-haspopup="dialog"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</button>
       </div>
     </div>
   </nav>

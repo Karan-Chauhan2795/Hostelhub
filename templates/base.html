@@ -13,16 +13,18 @@
   {% if user.is_authenticated %}
     {% include "components/sidebar.html" %}
     {% include "components/navbar.html" %}
+  {% elif landing_page %}
+    {% include "components/public_navbar.html" %}
   {% endif %}
-  {% if landing_page %}{% include "components/public_navbar.html" %}{% endif %}
   <main class="{% block main_class %}{% if user.is_authenticated %}main-content{% else %}auth-content{% endif %}{% endblock %}">
     {% include "components/messages.html" %}
     {% block content %}{% endblock %}
   </main>
-  {% if landing_page %}
-    {% include "components/public_footer.html" %}
-  {% elif user.is_authenticated %}
+  {% if user.is_authenticated %}
     {% include "components/footer.html" %}
+    {% include "components/logout_confirmation.html" %}
+  {% elif landing_page %}
+    {% include "components/public_footer.html" %}
   {% endif %}
   <script src="{% static 'js/main.js' %}"></script>
   <script src="https://unpkg.com/lucide@latest" defer></script>

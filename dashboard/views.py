@@ -5,10 +5,23 @@ from django.views.generic import TemplateView
 from accounts.mixins import RoleRequiredMixin
 
 
+def redirect_to_role_dashboard(user):
+    if user.role == "ADMIN":
+        return redirect("dashboard:admin_dashboard")
+    if user.role == "WARDEN":
+        return redirect("dashboard:warden_dashboard")
+    return redirect("dashboard:student_dashboard")
+
+
 class LandingPageView(TemplateView):
     """Public marketing page for HostelHub."""
 
     template_name = "landing.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect_to_role_dashboard(request.user)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -25,11 +38,7 @@ class DashboardRedirectView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
-        if request.user.role == "ADMIN":
-            return redirect("dashboard:admin_dashboard")
-        if request.user.role == "WARDEN":
-            return redirect("dashboard:warden_dashboard")
-        return redirect("dashboard:student_dashboard")
+        return redirect_to_role_dashboard(request.user)
 
 
 class AdminDashboardView(RoleRequiredMixin, TemplateView):
