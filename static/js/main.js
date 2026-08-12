@@ -26,9 +26,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const appShell = document.querySelector(".app-shell");
   const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
   if (appShell && sidebarToggle) {
+    const updateSidebarToggle = (isCollapsed) => {
+      sidebarToggle.setAttribute("aria-expanded", String(!isCollapsed));
+      sidebarToggle.setAttribute("aria-label", isCollapsed ? "Expand navigation" : "Collapse navigation");
+    };
+
+    updateSidebarToggle(appShell.classList.contains("sidebar-collapsed"));
     sidebarToggle.addEventListener("click", () => {
       const isCollapsed = appShell.classList.toggle("sidebar-collapsed");
-      sidebarToggle.setAttribute("aria-label", isCollapsed ? "Expand navigation" : "Collapse navigation");
+      updateSidebarToggle(isCollapsed);
     });
   }
 

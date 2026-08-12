@@ -1,13 +1,13 @@
-<aside class="sidebar" data-sidebar>
+<aside id="app-sidebar" class="sidebar" data-sidebar>
   <div class="sidebar-top">
     <a class="brand" href="{% url 'dashboard:home' %}" aria-label="HostelHub dashboard">
       <span>HH</span><strong>HostelHub</strong>
     </a>
-    <button class="sidebar-collapse" type="button" data-sidebar-toggle aria-label="Collapse navigation"><i class="fa-solid fa-bars"></i></button>
+    <button class="sidebar-collapse" type="button" data-sidebar-toggle aria-controls="app-sidebar" aria-expanded="true" aria-label="Collapse navigation"><i class="fa-solid fa-bars"></i></button>
   </div>
   <div class="sidebar-label">Workspace</div>
   <nav class="side-nav" aria-label="Application navigation">
-    <a href="{% url 'dashboard:home' %}" class="{% if request.resolver_match.app_name == 'dashboard' %}is-active{% endif %}"><i class="fa-solid fa-grid-2"></i><span>Overview</span></a>
+    <a href="{% url 'dashboard:home' %}" class="{% if request.resolver_match.app_name == 'dashboard' %}is-active{% endif %}"><i class="fa-solid fa-house"></i><span>Overview</span></a>
     {% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}
       <a href="{% url 'students:student_management' %}" class="{% if request.resolver_match.app_name == 'students' %}is-active{% endif %}"><i class="fa-solid fa-users"></i><span>Residents</span></a>
       <a href="{% url 'rooms:room_management' %}" class="{% if request.resolver_match.app_name == 'rooms' %}is-active{% endif %}"><i class="fa-solid fa-door-open"></i><span>Rooms</span></a>
