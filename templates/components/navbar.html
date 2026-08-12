@@ -1,10 +1,21 @@
 <header class="navbar">
   <div>
-    <p class="eyebrow">HostelHub</p>
+    <p class="eyebrow">HostelHub workspace</p>
     <h1>{% block page_heading %}{{ request.user.get_role_display }} Portal{% endblock %}</h1>
   </div>
   <nav class="top-actions">
-    <a href="{% url 'accounts:profile' %}">{{ request.user.username }}</a>
-    <a href="{% url 'accounts:logout' %}" class="btn btn-secondary">Logout</a>
+    <button type="button" class="top-icon" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span></span></button>
+    <div class="role-badge"><i class="fa-solid fa-shield-halved"></i>{{ request.user.get_role_display }}</div>
+    <div class="profile-menu" data-profile-menu>
+      <button class="profile-trigger" type="button" data-profile-toggle aria-expanded="false">
+        <span class="top-avatar">{{ request.user.get_full_name|default:request.user.username|slice:":1" }}</span>
+        <span class="profile-trigger-copy"><strong>{{ request.user.get_full_name|default:request.user.username }}</strong><small>View profile</small></span>
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
+      <div class="profile-dropdown" data-profile-dropdown>
+        <a href="{% url 'accounts:profile' %}"><i class="fa-regular fa-user"></i>My profile</a>
+        <a href="{% url 'accounts:logout' %}"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</a>
+      </div>
+    </div>
   </nav>
 </header>

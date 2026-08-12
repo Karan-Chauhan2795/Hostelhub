@@ -1,22 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Admin Dashboard | HostelHub{% endblock %}
 {% block content %}
-<section class="hero-card card">
-    <div>
-        <p class="eyebrow">Admin Dashboard</p>
-        <h2>Administration Overview</h2>
-        <p>Daily hostel operations summary for the current academic session.</p>
-    </div>
-</section>
+<section class="dashboard-welcome"><div><p class="eyebrow">Operations centre · 15 August</p><h2>Everything is running smoothly.</h2><p>Keep a pulse on your hostel operations, resident activity and upcoming actions.</p><div class="welcome-actions"><a href="{% url 'students:student_management' %}" class="btn btn-light"><i class="fa-solid fa-users"></i>Manage residents</a><a href="{% url 'rooms:room_management' %}" class="btn btn-welcome-outline"><i class="fa-solid fa-door-open"></i>View rooms</a></div></div><div class="welcome-orb"><i class="fa-solid fa-chart-line"></i><span>Today’s<br><strong>overview</strong></span></div></section>
 <section class="stats-grid">
     {% for item in stats %}
-    <article class="card stat-card">
-        <h3>{{ item.title }}</h3>
-        <div class="stat-value">{{ item.value }}</div>
-        <span class="stat-change">{{ item.change }}</span>
+    <article class="card stat-card stat-card-modern"><div class="stat-icon stat-icon-{{ forloop.counter }}"><i class="{% if forloop.counter == 1 %}fa-solid fa-users{% elif forloop.counter == 2 %}fa-solid fa-bed{% elif forloop.counter == 3 %}fa-regular fa-message{% else %}fa-solid fa-chart-simple{% endif %}"></i></div><div><h3>{{ item.title }}</h3><div class="stat-value">{{ item.value }}</div><span class="stat-change">{{ item.change }}</span></div>
     </article>
     {% endfor %}
 </section>
+<section class="dashboard-grid admin-insights"><article class="card chart-card"><div class="card-heading"><div><p class="eyebrow">Occupancy trend</p><h3>Resident growth</h3></div><span class="soft-pill success-pill"><i class="fa-solid fa-arrow-trend-up"></i>12.5%</span></div><div class="line-chart"><svg viewBox="0 0 600 180" role="img" aria-label="Occupancy trend chart"><defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#2563eb" stop-opacity=".24"/><stop offset="1" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs><path d="M0 150 C50 125 65 132 110 111 S170 140 215 94 S270 114 322 76 S390 90 430 58 S500 62 600 18 L600 180 L0 180Z" fill="url(#chartFill)"/><path d="M0 150 C50 125 65 132 110 111 S170 140 215 94 S270 114 322 76 S390 90 430 58 S500 62 600 18" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/></svg></div><div class="chart-labels chart-labels-six"><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span></div></article><article class="card notification-panel"><div class="card-heading"><div><p class="eyebrow">Needs attention</p><h3>Priority tasks</h3></div><span class="notification-count">3</span></div><ul class="priority-list"><li><i class="fa-solid fa-circle-exclamation warning"></i><span><strong>11 open complaints</strong><small>Review support queue</small></span><i class="fa-solid fa-chevron-right"></i></li><li><i class="fa-solid fa-door-open teal"></i><span><strong>8 rooms need review</strong><small>Allocation pending</small></span><i class="fa-solid fa-chevron-right"></i></li><li><i class="fa-solid fa-user-check blue"></i><span><strong>5 resident approvals</strong><small>New applications</small></span><i class="fa-solid fa-chevron-right"></i></li></ul></article></section>
 <section class="page-grid">
     <div class="card">
         <div class="section-header">

@@ -7,6 +7,7 @@
   {% load static %}
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" referrerpolicy="no-referrer">
 </head>
 <body class="{% block body_class %}{% if user.is_authenticated %}app-shell{% else %}auth-shell{% endif %}{% endblock %}">
   {% if user.is_authenticated %}

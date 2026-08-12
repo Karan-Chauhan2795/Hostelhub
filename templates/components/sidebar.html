@@ -1,19 +1,29 @@
-<aside class="sidebar">
-  <a class="brand" href="{% url 'dashboard:home' %}">
-    <span>HH</span>
-    <strong>HostelHub</strong>
-  </a>
-  <nav class="side-nav">
-    <a href="{% url 'dashboard:home' %}">Dashboard</a>
+<aside class="sidebar" data-sidebar>
+  <div class="sidebar-top">
+    <a class="brand" href="{% url 'dashboard:home' %}" aria-label="HostelHub dashboard">
+      <span>HH</span><strong>HostelHub</strong>
+    </a>
+    <button class="sidebar-collapse" type="button" data-sidebar-toggle aria-label="Collapse navigation"><i class="fa-solid fa-bars"></i></button>
+  </div>
+  <div class="sidebar-label">Workspace</div>
+  <nav class="side-nav" aria-label="Application navigation">
+    <a href="{% url 'dashboard:home' %}" class="{% if request.resolver_match.app_name == 'dashboard' %}is-active{% endif %}"><i class="fa-solid fa-grid-2"></i><span>Overview</span></a>
     {% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}
-      <a href="{% url 'students:student_management' %}">Students</a>
-      <a href="{% url 'rooms:room_management' %}">Rooms</a>
+      <a href="{% url 'students:student_management' %}" class="{% if request.resolver_match.app_name == 'students' %}is-active{% endif %}"><i class="fa-solid fa-users"></i><span>Residents</span></a>
+      <a href="{% url 'rooms:room_management' %}" class="{% if request.resolver_match.app_name == 'rooms' %}is-active{% endif %}"><i class="fa-solid fa-door-open"></i><span>Rooms</span></a>
     {% endif %}
-    <a href="{% url 'complaints:complaint_management' %}">Complaints</a>
-    <a href="{% url 'accounts:profile' %}">Profile</a>
+    <a href="{% url 'bookings:booking_list' %}" class="{% if request.resolver_match.app_name == 'bookings' %}is-active{% endif %}"><i class="fa-regular fa-calendar-check"></i><span>Bookings</span></a>
+    <a href="{% url 'complaints:complaint_management' %}" class="{% if request.resolver_match.app_name == 'complaints' %}is-active{% endif %}"><i class="fa-regular fa-message"></i><span>Support</span></a>
+    <a href="{% url 'notices:notice_list' %}" class="{% if request.resolver_match.app_name == 'notices' %}is-active{% endif %}"><i class="fa-regular fa-bell"></i><span>Notices</span></a>
+    <a href="{% url 'leave_management:leave_list' %}" class="{% if request.resolver_match.app_name == 'leave_management' %}is-active{% endif %}"><i class="fa-solid fa-plane-departure"></i><span>Leave</span></a>
+  </nav>
+  <div class="sidebar-label sidebar-label-bottom">Personal</div>
+  <nav class="side-nav side-nav-bottom">
+    <a href="{% url 'accounts:profile' %}" class="{% if request.resolver_match.app_name == 'accounts' %}is-active{% endif %}"><i class="fa-regular fa-user"></i><span>My profile</span></a>
+    {% if request.user.role == "ADMIN" %}<a href="{% url 'reports:reports_dashboard' %}" class="{% if request.resolver_match.app_name == 'reports' %}is-active{% endif %}"><i class="fa-solid fa-chart-line"></i><span>Reports</span></a>{% endif %}
   </nav>
   <div class="sidebar-user">
-    <span>{{ request.user.get_role_display }}</span>
-    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+    <div class="sidebar-avatar">{{ request.user.get_full_name|default:request.user.username|slice:":1" }}</div>
+    <div><span>{{ request.user.get_role_display }}</span><strong>{{ request.user.get_full_name|default:request.user.username }}</strong></div>
   </div>
 </aside>

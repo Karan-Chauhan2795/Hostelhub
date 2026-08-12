@@ -1,28 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Warden Dashboard | HostelHub{% endblock %}
 {% block content %}
-<section class="hero-card card">
-    <div>
-        <p class="eyebrow">Warden Dashboard</p>
-        <h2>Warden Operations</h2>
-        <p>Monitor hostel discipline, room readiness, and visitor movement.</p>
-    </div>
-</section>
+<section class="dashboard-welcome"><div><p class="eyebrow">Warden desk · 15 August</p><h2>Your hostel is in good hands.</h2><p>Monitor resident activity, daily checks and requests from one clear workspace.</p><div class="welcome-actions"><a class="btn btn-light" href="{% url 'visitors:visitor_list' %}"><i class="fa-solid fa-user-group"></i>Visitor log</a><a class="btn btn-welcome-outline" href="{% url 'complaints:complaint_management' %}"><i class="fa-regular fa-message"></i>Review requests</a></div></div><div class="welcome-orb"><i class="fa-solid fa-shield-heart"></i><span>Resident<br><strong>care</strong></span></div></section>
 <section class="stats-grid">
     {% for item in stats %}
-    <article class="card stat-card">
-        <h3>{{ item.title }}</h3>
-        <div class="stat-value">{{ item.value }}</div>
-        <span class="stat-change">{{ item.change }}</span>
+    <article class="card stat-card stat-card-modern"><div class="stat-icon stat-icon-{{ forloop.counter }}"><i class="{% if forloop.counter == 1 %}fa-solid fa-clipboard-check{% elif forloop.counter == 2 %}fa-solid fa-clock{% elif forloop.counter == 3 %}fa-solid fa-screwdriver-wrench{% else %}fa-solid fa-person-walking-arrow-right{% endif %}"></i></div><div><h3>{{ item.title }}</h3><div class="stat-value">{{ item.value }}</div><span class="stat-change">{{ item.change }}</span></div>
     </article>
     {% endfor %}
 </section>
-<section class="card">
-    <h3>Daily Alerts</h3>
-    <ul class="list">
-        {% for alert in alerts %}
-        <li>{{ alert }}</li>
-        {% endfor %}
-    </ul>
-</section>
+<section class="dashboard-grid activity-layout"><article class="card"><div class="card-heading"><div><p class="eyebrow">Live updates</p><h3>Daily alerts</h3></div><span class="live-label"><i class="fa-solid fa-circle"></i> Live</span></div><ul class="activity-list">{% for alert in alerts %}<li><span class="activity-icon activity-icon-teal"><i class="fa-solid fa-bolt"></i></span><span><strong>{{ alert }}</strong><small>Updated a few minutes ago</small></span><i class="fa-solid fa-arrow-right"></i></li>{% endfor %}</ul></article><article class="card checklist-card"><div class="card-heading"><div><p class="eyebrow">Night routine</p><h3>Today’s checklist</h3></div><span class="soft-pill">3 / 5</span></div><ul><li class="done"><i class="fa-solid fa-check"></i>Entrance check completed</li><li class="done"><i class="fa-solid fa-check"></i>Visitor log reconciled</li><li class="done"><i class="fa-solid fa-check"></i>Common areas reviewed</li><li><i></i>Floor B round</li><li><i></i>Curfew confirmation</li></ul></article></section>
 {% endblock %}

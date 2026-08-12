@@ -1,21 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Complaint Management | HostelHub{% endblock %}
 {% block content %}
-<section class="card">
-    <div class="section-header">
-        <div>
-            <p class="eyebrow">Support Desk</p>
-            <h2>Complaint Management</h2>
-        </div>
-        <input type="search" class="search-box" data-table-search="complaints-table" placeholder="Search complaints">
-    </div>
-    <table class="data-table" id="complaints-table">
+<section class="management-header"><div><p class="eyebrow">Resident support</p><h2>Complaint management</h2><p>Track, prioritise and resolve resident requests with care.</p></div><button class="btn btn-primary" type="button"><i class="fa-solid fa-plus"></i>New complaint</button></section>
+<section class="card table-card"><div class="table-toolbar"><div class="search-control"><i class="fa-solid fa-magnifying-glass"></i><input type="search" class="search-box" data-table-search="complaints-table" placeholder="Search complaints"></div><div class="filter-actions"><button type="button" class="filter-button"><i class="fa-solid fa-sliders"></i>Filters</button></div></div><div class="table-scroll"><table class="data-table" id="complaints-table">
         <thead><tr><th>ID</th><th>Student</th><th>Issue</th><th>Status</th></tr></thead>
         <tbody>
             {% for complaint in complaints %}
-            <tr><td>{{ complaint.id }}</td><td>{{ complaint.student }}</td><td>{{ complaint.issue }}</td><td><span class="status-pill">{{ complaint.status }}</span></td></tr>
+            <tr><td><span class="ticket-id">#{{ complaint.id }}</span></td><td><span class="table-person">{{ complaint.student|slice:":1" }}</span><strong>{{ complaint.student }}</strong></td><td>{{ complaint.issue }}</td><td><span class="status-pill">{{ complaint.status }}</span></td></tr>
             {% endfor %}
         </tbody>
-    </table>
-</section>
+    </table></div><div class="table-footer"><span>Showing {{ complaints|length }} requests</span><div class="pagination"><button disabled>‹</button><button class="active">1</button><button>2</button><button>3</button><button>›</button></div></div></section>
 {% endblock %}

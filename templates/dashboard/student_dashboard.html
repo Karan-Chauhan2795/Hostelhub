@@ -1,28 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Student Dashboard | HostelHub{% endblock %}
 {% block content %}
-<section class="hero-card card">
-    <div>
-        <p class="eyebrow">Student Dashboard</p>
-        <h2>Welcome, {{ request.user.get_full_name|default:request.user.username }}</h2>
-        <p>Your hostel dashboard with fee, room, and notice updates.</p>
-    </div>
+<section class="dashboard-welcome">
+    <div><p class="eyebrow">Student dashboard · 2026–27</p><h2>Good morning, {{ request.user.get_full_name|default:request.user.username }}.</h2><p>Here’s everything happening with your HostelHub stay today.</p><div class="welcome-actions"><a class="btn btn-light" href="{% url 'leave_management:leave_apply' %}"><i class="fa-solid fa-plane-departure"></i>Apply for leave</a><a class="btn btn-welcome-outline" href="{% url 'complaints:complaint_management' %}"><i class="fa-regular fa-message"></i>Get support</a></div></div>
+    <div class="welcome-orb"><i class="fa-solid fa-house"></i><span>Home<br><strong>B-204</strong></span></div>
 </section>
 <section class="stats-grid">
     {% for item in stats %}
-    <article class="card stat-card">
-        <h3>{{ item.title }}</h3>
-        <div class="stat-value">{{ item.value }}</div>
-        <span class="stat-change">{{ item.change }}</span>
+    <article class="card stat-card stat-card-modern">
+        <div class="stat-icon stat-icon-{{ forloop.counter }}"><i class="{% if forloop.counter == 1 %}fa-solid fa-wallet{% elif forloop.counter == 2 %}fa-solid fa-key{% elif forloop.counter == 3 %}fa-regular fa-message{% else %}fa-solid fa-plane-departure{% endif %}"></i></div>
+        <div><h3>{{ item.title }}</h3><div class="stat-value">{{ item.value }}</div><span class="stat-change">{{ item.change }}</span></div>
     </article>
     {% endfor %}
 </section>
-<section class="card">
-    <h3>Announcements</h3>
-    <ul class="list">
-        {% for notice in announcements %}
-        <li>{{ notice }}</li>
-        {% endfor %}
-    </ul>
-</section>
+<section class="dashboard-grid student-dashboard-grid"><article class="card chart-card"><div class="card-heading"><div><p class="eyebrow">Monthly overview</p><h3>Your stay at a glance</h3></div><span class="soft-pill">August</span></div><div class="chart-placeholder"><div class="chart-y"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div><div class="chart-bars"><i style="height:42%"></i><i style="height:67%"></i><i style="height:54%"></i><i style="height:88%"></i><i style="height:70%"></i><i style="height:92%"></i><i style="height:76%"></i></div></div><div class="chart-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div></article><article class="card calendar-card"><div class="card-heading"><div><p class="eyebrow">This week</p><h3>August 2026</h3></div><button type="button" class="icon-button"><i class="fa-solid fa-ellipsis"></i></button></div><div class="calendar-week"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class="calendar-days"><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span class="today">15</span><span>16</span></div><div class="next-event"><i class="fa-solid fa-utensils"></i><span><strong>Community dinner</strong><small>Today · 7:30 PM</small></span></div></article></section>
+<section class="dashboard-grid activity-layout"><article class="card"><div class="card-heading"><div><p class="eyebrow">Stay updated</p><h3>Announcements</h3></div><a href="{% url 'notices:notice_list' %}" class="text-link">View all</a></div><ul class="activity-list">{% for notice in announcements %}<li><span class="activity-icon"><i class="fa-regular fa-bell"></i></span><span><strong>{{ notice }}</strong><small>Posted today</small></span><i class="fa-solid fa-arrow-right"></i></li>{% endfor %}</ul></article><article class="card progress-card"><p class="eyebrow">Profile health</p><h3>Your profile is almost ready</h3><p>Keep your details complete for a smoother HostelHub experience.</p><div class="progress-track"><span></span></div><div class="progress-caption"><strong>80% complete</strong><a href="{% url 'accounts:profile' %}">Complete profile</a></div></article></section>
 {% endblock %}

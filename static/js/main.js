@@ -23,6 +23,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const appShell = document.querySelector(".app-shell");
+  const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+  if (appShell && sidebarToggle) {
+    sidebarToggle.addEventListener("click", () => {
+      const isCollapsed = appShell.classList.toggle("sidebar-collapsed");
+      sidebarToggle.setAttribute("aria-label", isCollapsed ? "Expand navigation" : "Collapse navigation");
+    });
+  }
+
+  const profileMenu = document.querySelector("[data-profile-menu]");
+  const profileToggle = document.querySelector("[data-profile-toggle]");
+  if (profileMenu && profileToggle) {
+    profileToggle.addEventListener("click", () => {
+      const isOpen = profileMenu.classList.toggle("is-open");
+      profileToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+    document.addEventListener("click", (event) => {
+      if (!profileMenu.contains(event.target)) {
+        profileMenu.classList.remove("is-open");
+        profileToggle.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
   document.querySelectorAll("[data-toggle-password]").forEach((button) => {
     const input = document.getElementById(button.dataset.togglePassword);
     if (!input) {

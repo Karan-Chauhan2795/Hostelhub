@@ -1,21 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Student Management | HostelHub{% endblock %}
 {% block content %}
-<section class="card">
-    <div class="section-header">
-        <div>
-            <p class="eyebrow">Directory</p>
-            <h2>Student Management</h2>
-        </div>
-        <input type="search" class="search-box" data-table-search="students-table" placeholder="Search students">
-    </div>
-    <table class="data-table" id="students-table">
+<section class="management-header"><div><p class="eyebrow">Resident directory</p><h2>Student management</h2><p>Manage resident records and room allocations in one place.</p></div><button class="btn btn-primary" type="button"><i class="fa-solid fa-user-plus"></i>Add student</button></section>
+<section class="card table-card"><div class="table-toolbar"><div class="search-control"><i class="fa-solid fa-magnifying-glass"></i><input type="search" class="search-box" data-table-search="students-table" placeholder="Search residents"></div><div class="filter-actions"><button type="button" class="filter-button"><i class="fa-solid fa-sliders"></i>Filters</button><button type="button" class="filter-button icon-button"><i class="fa-solid fa-arrow-down-up-across-line"></i></button></div></div><div class="table-scroll"><table class="data-table" id="students-table">
         <thead><tr><th>Name</th><th>Roll No.</th><th>Course</th><th>Room</th></tr></thead>
         <tbody>
             {% for student in students %}
-            <tr><td>{{ student.name }}</td><td>{{ student.roll }}</td><td>{{ student.course }}</td><td>{{ student.room }}</td></tr>
+            <tr><td><span class="table-person">{{ student.name|slice:":1" }}</span><strong>{{ student.name }}</strong></td><td>{{ student.roll }}</td><td>{{ student.course }}</td><td><span class="room-tag"><i class="fa-solid fa-door-open"></i>{{ student.room }}</span></td></tr>
             {% endfor %}
         </tbody>
-    </table>
-</section>
+    </table></div><div class="table-footer"><span>Showing {{ students|length }} residents</span><div class="pagination"><button disabled>‹</button><button class="active">1</button><button>2</button><button>3</button><button>›</button></div></div></section>
 {% endblock %}

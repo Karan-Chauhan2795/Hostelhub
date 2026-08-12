@@ -1,21 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Room Management | HostelHub{% endblock %}
 {% block content %}
-<section class="card">
-    <div class="section-header">
-        <div>
-            <p class="eyebrow">Allocation</p>
-            <h2>Room Management</h2>
-        </div>
-        <input type="search" class="search-box" data-table-search="rooms-table" placeholder="Search rooms">
-    </div>
-    <table class="data-table" id="rooms-table">
+<section class="management-header"><div><p class="eyebrow">Live inventory</p><h2>Room management</h2><p>Keep your room allocation and availability clear at a glance.</p></div><button class="btn btn-primary" type="button"><i class="fa-solid fa-plus"></i>Add room</button></section>
+<section class="card table-card"><div class="table-toolbar"><div class="search-control"><i class="fa-solid fa-magnifying-glass"></i><input type="search" class="search-box" data-table-search="rooms-table" placeholder="Search rooms"></div><div class="filter-actions"><button type="button" class="filter-button"><i class="fa-solid fa-sliders"></i>Filters</button></div></div><div class="table-scroll"><table class="data-table" id="rooms-table">
         <thead><tr><th>Room No.</th><th>Type</th><th>Status</th><th>Capacity</th></tr></thead>
         <tbody>
             {% for room in rooms %}
-            <tr><td>{{ room.number }}</td><td>{{ room.type }}</td><td><span class="status-pill">{{ room.status }}</span></td><td>{{ room.capacity }}</td></tr>
+            <tr><td><span class="room-number">{{ room.number }}</span></td><td>{{ room.type }}</td><td><span class="status-pill">{{ room.status }}</span></td><td><div class="capacity-cell"><span>{{ room.capacity }}</span><i><b></b></i></div></td></tr>
             {% endfor %}
         </tbody>
-    </table>
-</section>
+    </table></div><div class="table-footer"><span>Showing {{ rooms|length }} rooms</span><div class="pagination"><button disabled>‹</button><button class="active">1</button><button>2</button><button>3</button><button>›</button></div></div></section>
 {% endblock %}
