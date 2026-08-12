@@ -24,18 +24,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const appShell = document.querySelector(".app-shell");
+  const sidebar = document.querySelector("[data-sidebar]");
   const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
-  if (appShell && sidebarToggle) {
+  if (appShell && sidebar && sidebarToggle) {
+    const hoverPreviewQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+
     const updateSidebarToggle = (isCollapsed) => {
       sidebarToggle.setAttribute("aria-expanded", String(!isCollapsed));
       sidebarToggle.setAttribute("aria-label", isCollapsed ? "Expand navigation" : "Collapse navigation");
     };
 
+    const setHoverPreview = (isActive) => {
+      const canPreview = hoverPreviewQuery.matches && appShell.classList.contains("sidebar-collapsed");
+      appShell.classList.toggle("sidebar-hover-preview", canPreview && isActive);
+    };
+
     updateSidebarToggle(appShell.classList.contains("sidebar-collapsed"));
     sidebarToggle.addEventListener("click", () => {
       const isCollapsed = appShell.classList.toggle("sidebar-collapsed");
+      setHoverPreview(false);
       updateSidebarToggle(isCollapsed);
     });
+
+    sidebar.querySelectorAll(".side-nav").forEach((navigationArea) => {
+      navigationArea.addEventListener("pointerenter", () => setHoverPreview(true));
+    });
+    sidebar.addEventListener("pointerleave", () => setHoverPreview(false));
+    hoverPreviewQuery.addEventListener("change", () => setHoverPreview(false));
   }
 
   const profileMenu = document.querySelector("[data-profile-menu]");

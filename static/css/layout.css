@@ -25,11 +25,11 @@
   .app-shell.sidebar-collapsed .sidebar-top{flex-direction:column;justify-content:center;gap:9px;margin-bottom:20px}
   .app-shell.sidebar-collapsed .sidebar-collapse{display:grid}
   .app-shell.sidebar-collapsed .sidebar{overflow:visible}
-  .app-shell.sidebar-collapsed .sidebar:hover{width:284px;box-shadow:14px 0 28px rgba(15,23,42,.18)}
-  .app-shell.sidebar-collapsed .sidebar:hover .sidebar-top{flex-direction:row;justify-content:space-between;gap:0;margin-bottom:31px}
-  .app-shell.sidebar-collapsed .sidebar:hover .brand strong{display:block;animation:sidebar-label-reveal .18s ease both}
-  .app-shell.sidebar-collapsed .sidebar:hover .sidebar-label{display:block;animation:sidebar-label-reveal .18s ease both}
-  .app-shell.sidebar-collapsed .sidebar:hover .side-nav span{display:inline;animation:sidebar-label-reveal .18s ease both}
-  .app-shell.sidebar-collapsed .sidebar:hover .sidebar-user div:last-child{display:grid;animation:sidebar-label-reveal .18s ease both}
+  .app-shell.sidebar-collapsed.sidebar-hover-preview .sidebar{width:284px;box-shadow:14px 0 28px rgba(15,23,42,.18)}
+  .app-shell.sidebar-collapsed.sidebar-hover-preview .sidebar-top{flex-direction:row;justify-content:space-between;gap:0;margin-bottom:31px}
+  .app-shell.sidebar-collapsed.sidebar-hover-preview .brand strong{display:block;animation:sidebar-label-reveal .18s ease both}
+  .app-shell.sidebar-collapsed.sidebar-hover-preview .sidebar-label{display:block;animation:sidebar-label-reveal .18s ease both}
+  .app-shell.sidebar-collapsed.sidebar-hover-preview .side-nav span{display:inline;animation:sidebar-label-reveal .18s ease both}
+  .app-shell.sidebar-collapsed.sidebar-hover-preview .sidebar-user div:last-child{display:grid;animation:sidebar-label-reveal .18s ease both}
 }
 @keyframes sidebar-label-reveal{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
