@@ -25,13 +25,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const appShell = document.querySelector(".app-shell");
   const sidebar = document.querySelector("[data-sidebar]");
-  const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
-  if (appShell && sidebar && sidebarToggle) {
+  const sidebarToggles = document.querySelectorAll("[data-sidebar-toggle]");
+  if (appShell && sidebar && sidebarToggles.length) {
     const hoverPreviewQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const mobileSidebarQuery = window.matchMedia("(max-width: 980px)");
 
-    const updateSidebarToggle = (isCollapsed) => {
-      sidebarToggle.setAttribute("aria-expanded", String(!isCollapsed));
-      sidebarToggle.setAttribute("aria-label", isCollapsed ? "Expand navigation" : "Collapse navigation");
+    const updateSidebarToggles = () => {
+      const isMobile = mobileSidebarQuery.matches;
+      const isCollapsed = appShell.classList.contains("sidebar-collapsed");
+      const isMobileOpen = appShell.classList.contains("sidebar-mobile-open");
+
+      sidebarToggles.forEach((toggle) => {
+        const isExpanded = isMobile ? isMobileOpen : !isCollapsed;
+        toggle.setAttribute("aria-expanded", String(isExpanded));
+        toggle.setAttribute("aria-label", isExpanded ? "Collapse navigation" : "Expand navigation");
+      });
     };
 
     const setHoverPreview = (isActive) => {
@@ -39,16 +47,31 @@ document.addEventListener("DOMContentLoaded", () => {
       appShell.classList.toggle("sidebar-hover-preview", canPreview && isActive);
     };
 
-    updateSidebarToggle(appShell.classList.contains("sidebar-collapsed"));
-    sidebarToggle.addEventListener("click", () => {
-      const isCollapsed = appShell.classList.toggle("sidebar-collapsed");
-      setHoverPreview(false);
-      updateSidebarToggle(isCollapsed);
+    updateSidebarToggles();
+    sidebarToggles.forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        if (mobileSidebarQuery.matches) {
+          appShell.classList.toggle("sidebar-mobile-open");
+        } else {
+          appShell.classList.toggle("sidebar-collapsed");
+          setHoverPreview(false);
+        }
+        updateSidebarToggles();
+      });
     });
 
-    sidebar.addEventListener("pointerenter", () => setHoverPreview(true));
+    sidebar.addEventListener("pointerenter", () => {
+      if (!mobileSidebarQuery.matches) {
+        setHoverPreview(true);
+      }
+    });
     sidebar.addEventListener("pointerleave", () => setHoverPreview(false));
     hoverPreviewQuery.addEventListener("change", () => setHoverPreview(false));
+    mobileSidebarQuery.addEventListener("change", () => {
+      appShell.classList.remove("sidebar-mobile-open");
+      setHoverPreview(false);
+      updateSidebarToggles();
+    });
   }
 
   const logoutModal = document.querySelector("[data-logout-modal]");

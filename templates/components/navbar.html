@@ -4,6 +4,7 @@
     <h1>{% block page_heading %}{{ request.user.get_role_display }} Portal{% endblock %}</h1>
   </div>
   <nav class="top-actions">
+    <button type="button" class="mobile-sidebar-toggle" data-sidebar-toggle aria-controls="app-sidebar" aria-expanded="false" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
     <button type="button" class="top-icon" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span></span></button>
     <div class="role-badge"><i class="fa-solid fa-shield-halved"></i>{{ request.user.get_role_display }}</div>
     <div class="profile-menu" data-profile-menu>
