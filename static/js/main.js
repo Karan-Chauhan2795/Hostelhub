@@ -190,12 +190,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (nova) {
     const panel = nova.querySelector("[data-nova-panel]");
     const intro = nova.querySelector("[data-nova-intro]");
+    const openButton = nova.querySelector("[data-nova-open]");
     const messages = nova.querySelector("[data-nova-messages]");
     const form = nova.querySelector("[data-nova-form]");
     const input = nova.querySelector("[data-nova-input]");
     const sendButton = nova.querySelector("[data-nova-send]");
     const storageKey = `hostelhub_nova_${nova.dataset.storageUser}`;
-    const dismissedKey = `${storageKey}_hint_dismissed`;
     let history = [];
 
     try { history = JSON.parse(window.localStorage.getItem(storageKey) || "[]"); } catch (_) { history = []; }
@@ -214,23 +214,28 @@ document.addEventListener("DOMContentLoaded", () => {
       history.forEach(({ role, text }) => renderMessage(role === "model" ? "assistant" : role, text));
     };
     const saveHistory = () => window.localStorage.setItem(storageKey, JSON.stringify(history.slice(-30)));
-    const openNova = () => { panel.hidden = false; intro.hidden = true; window.sessionStorage.setItem(dismissedKey, "1"); input.focus(); };
-    const closeNova = () => { panel.hidden = true; };
-    nova.querySelector("[data-nova-open]").addEventListener("click", openNova);
+    const setNovaOpen = (isOpen) => {
+      panel.hidden = !isOpen;
+      openButton.hidden = isOpen;
+      openButton.setAttribute("aria-expanded", String(isOpen));
+      intro.hidden = true;
+      if (isOpen) {
+        input.focus();
+      } else {
+        openButton.focus();
+      }
+    };
+    const openNova = () => setNovaOpen(true);
+    const closeNova = () => setNovaOpen(false);
+    openButton.addEventListener("click", openNova);
     nova.querySelector("[data-nova-close]").addEventListener("click", closeNova);
     nova.querySelector("[data-nova-clear]").addEventListener("click", () => { history = []; window.localStorage.removeItem(storageKey); renderHistory(); });
     document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !panel.hidden) closeNova(); });
     renderHistory();
 
-    if (!window.sessionStorage.getItem(dismissedKey)) {
-      const showHint = () => {
-        if (!panel.hidden || window.sessionStorage.getItem(dismissedKey)) return;
-        intro.hidden = false;
-        window.setTimeout(() => { intro.hidden = true; }, 3500);
-      };
-      window.setTimeout(showHint, 6000);
-      window.setInterval(showHint, 10000);
-    }
+    // A single launch-page greeting; it never opens the panel or repeats.
+    intro.hidden = false;
+    window.setTimeout(() => { intro.hidden = true; }, 3500);
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
