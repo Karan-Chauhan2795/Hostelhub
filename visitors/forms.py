@@ -6,4 +6,4 @@ from .models import Visitor
 class VisitorForm(forms.ModelForm):
     class Meta:
         model = Visitor
-        fields = []
+        fields = ["student", "name", "phone", "purpose"]

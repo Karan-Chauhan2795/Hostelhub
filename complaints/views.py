@@ -1,6 +1,12 @@
-from django.views.generic import TemplateView
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, TemplateView, UpdateView
 
 from accounts.mixins import RoleRequiredMixin
+from students.models import Student
+from .forms import ComplaintForm
+from .models import Complaint
 
 
 class ComplaintManagementView(RoleRequiredMixin, TemplateView):
@@ -9,9 +15,38 @@ class ComplaintManagementView(RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["complaints"] = [
-            {"id": "CMP-101", "student": "Aarav Mehta", "issue": "Electrical outlet not working", "status": "In Progress"},
-            {"id": "CMP-102", "student": "Sneha Verma", "issue": "Water heater repair", "status": "Resolved"},
-            {"id": "CMP-103", "student": "Rajat Kumar", "issue": "Internet connectivity", "status": "Pending"},
-        ]
+        complaints = Complaint.objects.select_related("student__user")
+        if self.request.user.role == "STUDENT":
+            complaints = complaints.filter(student__user=self.request.user)
+        context["complaints"] = complaints
         return context
+
+
+class ComplaintCreateView(RoleRequiredMixin, CreateView):
+    form_class = ComplaintForm
+    template_name = "complaints/complaint_create.html"
+    success_url = reverse_lazy("complaints:complaint_management")
+    allowed_roles = ("STUDENT",)
+
+    def dispatch(self, request, *args, **kwargs):
+        self.student = Student.objects.filter(user=request.user).first()
+        if self.student is None:
+            messages.error(request, "Your student record is not set up yet. Please contact the warden.")
+            return redirect("complaints:complaint_management")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.student = self.student
+        messages.success(self.request, "Complaint submitted.")
+        return super().form_valid(form)
+
+
+class ComplaintUpdateView(RoleRequiredMixin, UpdateView):
+    template_name = "complaints/complaint_create.html"
+    form_class = ComplaintForm
+    model = Complaint
+    success_url = reverse_lazy("complaints:complaint_management")
+    allowed_roles = ("STUDENT",)
+
+    def get_queryset(self):
+        return Complaint.objects.filter(student__user=self.request.user)

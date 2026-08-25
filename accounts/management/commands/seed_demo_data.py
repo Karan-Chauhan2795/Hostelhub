@@ -37,3 +37,24 @@ class Command(BaseCommand):
 
             action = "Created" if created else "Verified"
             self.stdout.write(self.style.SUCCESS(f"{action} demo {role_name.lower()} account: {username}"))
+
+        # Keep the demo account immediately usable without overwriting existing data.
+        from rooms.models import Room
+        from students.models import Student
+        from notices.models import Notice
+
+        room, _ = Room.objects.get_or_create(
+            number="B-204",
+            defaults={"room_type": Room.RoomType.DOUBLE, "capacity": 2, "monthly_fee": 8500},
+        )
+        student_user = User.objects.get(username="student")
+        Student.objects.get_or_create(
+            user=student_user,
+            defaults={"roll_number": "DEMO-001", "course": "HostelHub Demo", "room": room, "emergency_contact": "HostelHub Support"},
+        )
+        warden_user = User.objects.get(username="warden")
+        Notice.objects.get_or_create(
+            title="Welcome to HostelHub",
+            defaults={"body": "Use HostelHub to review notices, request leave and contact support.", "created_by": warden_user},
+        )
+        self.stdout.write(self.style.SUCCESS("Verified demo HostelHub records."))

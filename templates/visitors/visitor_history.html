@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Visitor History{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Visitor History</h1>
-  <p>This is a placeholder page for the Visitor History feature.</p>
-</div>
-{% endblock %}
+{% block title %}Visitor History | HostelHub{% endblock %}
+{% block content %}<section class="card table-card"><div class="card-heading"><div><p class="eyebrow">Resident visits</p><h2>Visitor history</h2></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Visitor</th><th>Resident</th><th>Check in</th><th>Check out</th></tr></thead><tbody>{% for visitor in object_list %}<tr><td>{{ visitor.name }}</td><td>{{ visitor.student }}</td><td>{{ visitor.check_in|date:"d M Y, H:i" }}</td><td>{{ visitor.check_out|date:"d M Y, H:i"|default:"Still checked in" }}</td></tr>{% empty %}<tr><td colspan="4">No visitor history yet.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}

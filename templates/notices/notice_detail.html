@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Notice Detail{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Notice Detail</h1>
-  <p>This is a placeholder page for the Notice Detail feature.</p>
-</div>
-{% endblock %}
+{% block title %}{{ object.title }} | HostelHub{% endblock %}
+{% block content %}<article class="page-card"><p class="eyebrow">Published {{ object.created_at|date:"d M Y" }}</p><h1>{{ object.title }}</h1><p>{{ object.body|linebreaksbr }}</p></article>{% endblock %}

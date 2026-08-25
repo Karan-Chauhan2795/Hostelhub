@@ -1,5 +1,1 @@
-from django.db import models
-
-
-class Report(models.Model):
-    pass
+# Reports are live database queries, not persisted report records.

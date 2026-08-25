@@ -45,3 +45,4 @@ class LoginRedirectTests(TestCase):
         user = User.objects.get(username="nisha_student")
         self.assertEqual(user.role, User.Role.STUDENT)
         self.assertTrue(user.check_password("StrongPass123!"))
+        self.assertEqual(user.student_profile.roll_number, f"STU-{user.pk:06d}")

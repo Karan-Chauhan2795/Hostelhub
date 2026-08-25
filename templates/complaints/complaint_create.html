@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Create Complaint{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Create Complaint</h1>
-  <p>This is a placeholder page for the Create Complaint feature.</p>
-</div>
-{% endblock %}
+{% block title %}New Complaint | HostelHub{% endblock %}
+{% block content %}{% include "components/model_form.html" with form_title="New complaint" form_intro="Tell the hostel team what needs attention." cancel_url="/complaints/" %}{% endblock %}

@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Update Room{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Update Room</h1>
-  <p>This is a placeholder page for the Update Room feature.</p>
-</div>
-{% endblock %}
+{% block title %}Update Room | HostelHub{% endblock %}
+{% block content %}{% include "components/model_form.html" with form_title="Update room" cancel_url="/rooms/" %}{% endblock %}

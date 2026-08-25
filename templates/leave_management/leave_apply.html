@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Apply Leave{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Apply Leave</h1>
-  <p>This is a placeholder page for the Apply Leave feature.</p>
-</div>
-{% endblock %}
+{% block title %}Apply for Leave | HostelHub{% endblock %}
+{% block content %}{% include "components/model_form.html" with form_title="Apply for leave" form_intro="Submit the dates and reason for your leave request." cancel_url="/leave/" %}{% endblock %}

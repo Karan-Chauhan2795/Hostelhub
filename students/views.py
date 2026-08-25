@@ -1,6 +1,10 @@
-from django.views.generic import TemplateView
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, TemplateView, UpdateView
 
 from accounts.mixins import RoleRequiredMixin
+from .forms import StudentForm
+from .models import Student
 
 
 class StudentManagementView(RoleRequiredMixin, TemplateView):
@@ -9,9 +13,24 @@ class StudentManagementView(RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["students"] = [
-            {"name": "Aarav Mehta", "roll": "220101", "course": "MCA", "room": "A-101"},
-            {"name": "Sneha Verma", "roll": "220102", "course": "MCA", "room": "B-204"},
-            {"name": "Rajat Kumar", "roll": "220103", "course": "MCA", "room": "C-305"},
-        ]
+        context["students"] = Student.objects.select_related("user", "room")
         return context
+
+
+class StudentCreateView(RoleRequiredMixin, CreateView):
+    template_name = "students/student_create.html"
+    form_class = StudentForm
+    success_url = reverse_lazy("students:student_management")
+    allowed_roles = ("ADMIN", "WARDEN")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Student record added.")
+        return super().form_valid(form)
+
+
+class StudentUpdateView(RoleRequiredMixin, UpdateView):
+    template_name = "students/student_update.html"
+    form_class = StudentForm
+    model = Student
+    success_url = reverse_lazy("students:student_management")
+    allowed_roles = ("ADMIN", "WARDEN")

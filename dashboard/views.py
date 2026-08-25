@@ -3,6 +3,13 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
 from accounts.mixins import RoleRequiredMixin
+from bookings.models import Booking
+from complaints.models import Complaint
+from leave_management.models import LeaveRequest
+from notices.models import Notice
+from rooms.models import Room
+from students.models import Student
+from visitors.models import Visitor
 
 
 def redirect_to_role_dashboard(user):
@@ -14,8 +21,6 @@ def redirect_to_role_dashboard(user):
 
 
 class LandingPageView(TemplateView):
-    """Public marketing page for HostelHub."""
-
     template_name = "landing.html"
 
     def dispatch(self, request, *args, **kwargs):
@@ -26,11 +31,7 @@ class LandingPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["landing_page"] = True
-        context["rooms"] = [
-            {"name": "Twin Studio", "price": "₹8,500", "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=900&q=85", "features": "2 residents · Ensuite bath"},
-            {"name": "Premium Single", "price": "₹12,000", "image": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85", "features": "Private room · Study-ready"},
-            {"name": "Four-Bed Suite", "price": "₹6,500", "image": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=900&q=85", "features": "4 residents · Best value"},
-        ]
+        context["rooms"] = Room.objects.all()[:3]
         return context
 
 
@@ -47,22 +48,18 @@ class AdminDashboardView(RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        rooms = list(Room.objects.all())
         context["stats"] = [
-            {"title": "Total Residents", "value": "248", "change": "+12%"},
-            {"title": "Occupied Rooms", "value": "196", "change": "+8%"},
-            {"title": "Open Complaints", "value": "11", "change": "-3"},
-            {"title": "Attendance Today", "value": "94%", "change": "+2%"},
+            {"title": "Total Residents", "value": Student.objects.count(), "change": "Current records"},
+            {"title": "Occupied Rooms", "value": sum(room.occupied_count > 0 for room in rooms), "change": f"of {len(rooms)} rooms"},
+            {"title": "Open Complaints", "value": Complaint.objects.exclude(status=Complaint.Status.RESOLVED).count(), "change": "Needs attention"},
+            {"title": "Pending Bookings", "value": Booking.objects.filter(status=Booking.Status.PENDING).count(), "change": "Awaiting review"},
         ]
-        context["students"] = [
-            {"name": "Aarav Mehta", "room": "A-101", "status": "Active"},
-            {"name": "Sneha Verma", "room": "B-204", "status": "Pending Fee"},
-            {"name": "Rajat Kumar", "room": "C-305", "status": "Active"},
-        ]
-        context["rooms"] = [
-            {"number": "A-101", "occupancy": "2/2"},
-            {"number": "B-204", "occupancy": "1/2"},
-            {"number": "C-305", "occupancy": "2/2"},
-        ]
+        context["students"] = Student.objects.select_related("user", "room")[:3]
+        context["rooms"] = rooms[:3]
+        context["open_complaint_count"] = Complaint.objects.exclude(status=Complaint.Status.RESOLVED).count()
+        context["available_room_count"] = sum(room.occupied_count < room.capacity for room in rooms)
+        context["pending_booking_count"] = Booking.objects.filter(status=Booking.Status.PENDING).count()
         return context
 
 
@@ -73,15 +70,12 @@ class WardenDashboardView(RoleRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["stats"] = [
-            {"title": "Night Checks", "value": "18", "change": "+4"},
-            {"title": "Pending Approvals", "value": "5", "change": "+1"},
-            {"title": "Room Issues", "value": "3", "change": "-1"},
-            {"title": "Visitors Today", "value": "9", "change": "+2"},
+            {"title": "Pending Approvals", "value": LeaveRequest.objects.filter(status=LeaveRequest.Status.PENDING).count(), "change": "Leave requests"},
+            {"title": "Room Issues", "value": Complaint.objects.exclude(status=Complaint.Status.RESOLVED).count(), "change": "Open complaints"},
+            {"title": "Visitors Logged", "value": Visitor.objects.count(), "change": "Current log"},
+            {"title": "Residents", "value": Student.objects.count(), "change": "Current records"},
         ]
-        context["alerts"] = [
-            "Hostel curfew reminder sent to all residents.",
-            "Maintenance request for block C is under review.",
-        ]
+        context["alerts"] = Notice.objects.values_list("title", flat=True)[:2]
         return context
 
 
@@ -91,14 +85,13 @@ class StudentDashboardView(RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        student = Student.objects.filter(user=self.request.user).select_related("room").first()
+        context["student_room"] = student.room.number if student and student.room else "Not assigned"
         context["stats"] = [
-            {"title": "Hostel Fee", "value": "Paid", "change": "Up to date"},
-            {"title": "Current Room", "value": "B-204", "change": "Shared"},
-            {"title": "Complaints", "value": "1", "change": "In review"},
-            {"title": "Leave Requests", "value": "0", "change": "No pending"},
+            {"title": "Current Room", "value": student.room.number if student and student.room else "Not assigned", "change": student.room.get_room_type_display() if student and student.room else "Contact the warden"},
+            {"title": "Complaints", "value": student.complaints.exclude(status=Complaint.Status.RESOLVED).count() if student else 0, "change": "Open requests"},
+            {"title": "Leave Requests", "value": student.leave_requests.filter(status=LeaveRequest.Status.PENDING).count() if student else 0, "change": "Pending"},
+            {"title": "Bookings", "value": student.bookings.exclude(status=Booking.Status.CANCELLED).count() if student else 0, "change": "Active requests"},
         ]
-        context["announcements"] = [
-            "Mess timings updated for the weekend.",
-            "Library access extended till 10 PM.",
-        ]
+        context["announcements"] = Notice.objects.values_list("title", flat=True)[:3]
         return context

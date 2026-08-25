@@ -13,3 +13,4 @@ class User(AbstractUser):
         choices=Role.choices,
         default=Role.STUDENT,
     )
+    phone_number = models.CharField(max_length=20, blank=True)

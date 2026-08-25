@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Create Visitor{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Create Visitor</h1>
-  <p>This is a placeholder page for the Create Visitor feature.</p>
-</div>
-{% endblock %}
+{% block title %}Check In Visitor | HostelHub{% endblock %}
+{% block content %}{% include "components/model_form.html" with form_title="Check in visitor" form_intro="Record a visitor against an authorized resident." cancel_url="/visitors/" %}{% endblock %}

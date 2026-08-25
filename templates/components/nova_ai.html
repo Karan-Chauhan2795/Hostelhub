@@ -1,0 +1,10 @@
+<section class="nova" data-nova data-endpoint="{% url 'nova_ai:chat' %}" data-storage-user="{{ request.user.pk }}" aria-label="Nova AI assistant">
+  <div class="nova-intro" data-nova-intro hidden>Hi, I’m Nova <span aria-hidden="true">👋</span></div>
+  <button class="nova-fab" type="button" data-nova-open aria-label="Open Nova AI"><i class="fa-solid fa-sparkles" aria-hidden="true"></i><span class="sr-only">Open Nova AI</span></button>
+  <section class="nova-panel" data-nova-panel hidden role="dialog" aria-modal="true" aria-labelledby="nova-title">
+    <header class="nova-header"><div><p class="eyebrow">HostelHub assistant</p><h2 id="nova-title">Nova AI</h2></div><button type="button" class="nova-close" data-nova-close aria-label="Close Nova AI"><i class="fa-solid fa-xmark"></i></button></header>
+    <div class="nova-messages" data-nova-messages aria-live="polite"></div>
+    <div class="nova-actions"><button type="button" data-nova-clear>Clear chat history</button></div>
+    <form class="nova-form" data-nova-form><label class="sr-only" for="nova-message">Ask Nova</label><textarea id="nova-message" data-nova-input rows="1" maxlength="1200" placeholder="Ask Nova about HostelHub…"></textarea><button class="btn btn-primary" type="submit" data-nova-send>Send</button></form>
+  </section>
+</section>

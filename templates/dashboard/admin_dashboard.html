@@ -8,21 +8,21 @@
     </article>
     {% endfor %}
 </section>
-<section class="dashboard-grid admin-insights"><article class="card chart-card"><div class="card-heading"><div><p class="eyebrow">Occupancy trend</p><h3>Resident growth</h3></div><span class="soft-pill success-pill"><i class="fa-solid fa-arrow-trend-up"></i>12.5%</span></div><div class="line-chart"><svg viewBox="0 0 600 180" role="img" aria-label="Occupancy trend chart"><defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#2563eb" stop-opacity=".24"/><stop offset="1" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs><path d="M0 150 C50 125 65 132 110 111 S170 140 215 94 S270 114 322 76 S390 90 430 58 S500 62 600 18 L600 180 L0 180Z" fill="url(#chartFill)"/><path d="M0 150 C50 125 65 132 110 111 S170 140 215 94 S270 114 322 76 S390 90 430 58 S500 62 600 18" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/></svg></div><div class="chart-labels chart-labels-six"><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span></div></article><article class="card notification-panel"><div class="card-heading"><div><p class="eyebrow">Needs attention</p><h3>Priority tasks</h3></div><span class="notification-count">3</span></div><ul class="priority-list"><li><i class="fa-solid fa-circle-exclamation warning"></i><span><strong>11 open complaints</strong><small>Review support queue</small></span><i class="fa-solid fa-chevron-right"></i></li><li><i class="fa-solid fa-door-open teal"></i><span><strong>8 rooms need review</strong><small>Allocation pending</small></span><i class="fa-solid fa-chevron-right"></i></li><li><i class="fa-solid fa-user-check blue"></i><span><strong>5 resident approvals</strong><small>New applications</small></span><i class="fa-solid fa-chevron-right"></i></li></ul></article></section>
+<section class="dashboard-grid admin-insights"><article class="card chart-card"><div class="card-heading"><div><p class="eyebrow">Occupancy trend</p><h3>Resident growth</h3></div><span class="soft-pill success-pill">Live records</span></div><div class="line-chart"><svg viewBox="0 0 600 180" role="img" aria-label="Occupancy trend chart"><defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#2563eb" stop-opacity=".24"/><stop offset="1" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs><path d="M0 150 C50 125 65 132 110 111 S170 140 215 94 S270 114 322 76 S390 90 430 58 S500 62 600 18 L600 180 L0 180Z" fill="url(#chartFill)"/><path d="M0 150 C50 125 65 132 110 111 S170 140 215 94 S270 114 322 76 S390 90 430 58 S500 62 600 18" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/></svg></div><div class="chart-labels chart-labels-six"><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span></div></article><article class="card notification-panel"><div class="card-heading"><div><p class="eyebrow">Needs attention</p><h3>Priority tasks</h3></div><span class="notification-count">{{ open_complaint_count|add:available_room_count|add:pending_booking_count }}</span></div><ul class="priority-list"><li><i class="fa-solid fa-circle-exclamation warning"></i><span><strong>{{ open_complaint_count }} open complaints</strong><small>Review support queue</small></span><i class="fa-solid fa-chevron-right"></i></li><li><i class="fa-solid fa-door-open teal"></i><span><strong>{{ available_room_count }} rooms available</strong><small>Allocation capacity</small></span><i class="fa-solid fa-chevron-right"></i></li><li><i class="fa-solid fa-user-check blue"></i><span><strong>{{ pending_booking_count }} booking requests</strong><small>Awaiting review</small></span><i class="fa-solid fa-chevron-right"></i></li></ul></article></section>
 <section class="page-grid">
     <div class="card">
         <div class="section-header">
             <h3>Recent Students</h3>
             <a href="{% url 'students:student_management' %}" class="text-link">View all</a>
         </div>
-        <table class="data-table">
+        <div class="table-scroll"><table class="data-table">
             <thead><tr><th>Name</th><th>Room</th><th>Status</th></tr></thead>
             <tbody>
                 {% for student in students %}
-                <tr><td>{{ student.name }}</td><td>{{ student.room }}</td><td><span class="status-pill">{{ student.status }}</span></td></tr>
+                <tr><td>{{ student.user.get_full_name|default:student.user.username }}</td><td>{{ student.room|default:"Unassigned" }}</td><td><span class="status-pill">Active</span></td></tr>
                 {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
     <div class="card">
         <div class="section-header">
@@ -31,7 +31,7 @@
         </div>
         <ul class="list">
             {% for room in rooms %}
-            <li><span>{{ room.number }}</span><strong>{{ room.occupancy }}</strong></li>
+            <li><span>{{ room.number }}</span><strong>{{ room.occupied_count }}/{{ room.capacity }}</strong></li>
             {% endfor %}
         </ul>
     </div>

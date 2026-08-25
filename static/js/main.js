@@ -185,4 +185,82 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   });
+
+  const nova = document.querySelector("[data-nova]");
+  if (nova) {
+    const panel = nova.querySelector("[data-nova-panel]");
+    const intro = nova.querySelector("[data-nova-intro]");
+    const messages = nova.querySelector("[data-nova-messages]");
+    const form = nova.querySelector("[data-nova-form]");
+    const input = nova.querySelector("[data-nova-input]");
+    const sendButton = nova.querySelector("[data-nova-send]");
+    const storageKey = `hostelhub_nova_${nova.dataset.storageUser}`;
+    const dismissedKey = `${storageKey}_hint_dismissed`;
+    let history = [];
+
+    try { history = JSON.parse(window.localStorage.getItem(storageKey) || "[]"); } catch (_) { history = []; }
+    if (!Array.isArray(history)) history = [];
+
+    const renderMessage = (role, text, extraClass = "") => {
+      const message = document.createElement("div");
+      message.className = `nova-message is-${role}${extraClass ? ` ${extraClass}` : ""}`;
+      message.textContent = text;
+      messages.appendChild(message);
+      messages.scrollTop = messages.scrollHeight;
+    };
+    const renderHistory = () => {
+      messages.replaceChildren();
+      if (!history.length) renderMessage("assistant", "Hi! I’m Nova. Ask me about HostelHub rooms, bookings, leave, notices or support.");
+      history.forEach(({ role, text }) => renderMessage(role === "model" ? "assistant" : role, text));
+    };
+    const saveHistory = () => window.localStorage.setItem(storageKey, JSON.stringify(history.slice(-30)));
+    const openNova = () => { panel.hidden = false; intro.hidden = true; window.sessionStorage.setItem(dismissedKey, "1"); input.focus(); };
+    const closeNova = () => { panel.hidden = true; };
+    nova.querySelector("[data-nova-open]").addEventListener("click", openNova);
+    nova.querySelector("[data-nova-close]").addEventListener("click", closeNova);
+    nova.querySelector("[data-nova-clear]").addEventListener("click", () => { history = []; window.localStorage.removeItem(storageKey); renderHistory(); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !panel.hidden) closeNova(); });
+    renderHistory();
+
+    if (!window.sessionStorage.getItem(dismissedKey)) {
+      const showHint = () => {
+        if (!panel.hidden || window.sessionStorage.getItem(dismissedKey)) return;
+        intro.hidden = false;
+        window.setTimeout(() => { intro.hidden = true; }, 3500);
+      };
+      window.setTimeout(showHint, 6000);
+      window.setInterval(showHint, 10000);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text || sendButton.disabled) return;
+      renderMessage("user", text);
+      input.value = "";
+      sendButton.disabled = true;
+      renderMessage("assistant", "Nova is thinking…", "is-loading");
+      const loading = messages.lastElementChild;
+      try {
+        const csrfToken = document.cookie.split("; ").find((cookie) => cookie.startsWith("csrftoken="))?.split("=")[1] || "";
+        const response = await fetch(nova.dataset.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRFToken": decodeURIComponent(csrfToken) },
+          body: JSON.stringify({ message: text, history }),
+        });
+        const data = await response.json();
+        loading.remove();
+        if (!response.ok || !data.reply) throw new Error(data.error || "Nova is temporarily unavailable. Please try again shortly.");
+        history.push({ role: "user", text }, { role: "model", text: data.reply });
+        saveHistory();
+        renderMessage("assistant", data.reply);
+      } catch (error) {
+        loading.remove();
+        renderMessage("assistant", error.message || "Nova is temporarily unavailable. Please try again shortly.", "is-error");
+      } finally {
+        sendButton.disabled = false;
+        input.focus();
+      }
+    });
+  }
 });

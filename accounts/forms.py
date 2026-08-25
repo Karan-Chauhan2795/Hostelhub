@@ -68,3 +68,15 @@ class StudentSignupForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email", "phone_number")
+        widgets = {
+            "first_name": forms.TextInput(attrs={"autocomplete": "given-name"}),
+            "last_name": forms.TextInput(attrs={"autocomplete": "family-name"}),
+            "email": forms.EmailInput(attrs={"autocomplete": "email"}),
+            "phone_number": forms.TextInput(attrs={"autocomplete": "tel"}),
+        }

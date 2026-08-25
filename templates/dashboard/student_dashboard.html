@@ -3,7 +3,7 @@
 {% block content %}
 <section class="dashboard-welcome">
     <div><p class="eyebrow">Student dashboard · 2026–27</p><h2>Good morning, {{ request.user.get_full_name|default:request.user.username }}.</h2><p>Here’s everything happening with your HostelHub stay today.</p><div class="welcome-actions"><a class="btn btn-light" href="{% url 'leave_management:leave_apply' %}"><i class="fa-solid fa-plane-departure"></i>Apply for leave</a><a class="btn btn-welcome-outline" href="{% url 'complaints:complaint_management' %}"><i class="fa-regular fa-message"></i>Get support</a></div></div>
-    <div class="welcome-orb"><i class="fa-solid fa-house"></i><span>Home<br><strong>B-204</strong></span></div>
+    <div class="welcome-orb"><i class="fa-solid fa-house"></i><span>Home<br><strong>{{ student_room }}</strong></span></div>
 </section>
 <section class="stats-grid">
     {% for item in stats %}

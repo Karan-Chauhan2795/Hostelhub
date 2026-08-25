@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Leave Detail{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Leave Detail</h1>
-  <p>This is a placeholder page for the Leave Detail feature.</p>
-</div>
-{% endblock %}
+{% block title %}Leave Request | HostelHub{% endblock %}
+{% block content %}<section class="page-card"><p class="eyebrow">Leave request</p><h1>{{ object.get_status_display }}</h1><dl class="detail-list"><div><dt>From</dt><dd>{{ object.start_date|date:"d M Y" }}</dd></div><div><dt>To</dt><dd>{{ object.end_date|date:"d M Y" }}</dd></div><div><dt>Reason</dt><dd>{{ object.reason }}</dd></div></dl></section>{% endblock %}

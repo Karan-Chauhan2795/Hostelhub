@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Create Booking{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Create Booking</h1>
-  <p>This is a placeholder page for the Create Booking feature.</p>
-</div>
-{% endblock %}
+{% block title %}Create Booking | HostelHub{% endblock %}
+{% block content %}{% include "components/model_form.html" with form_title="Request a room booking" form_intro="Your request is sent to the hostel team for review." cancel_url="/bookings/" %}{% endblock %}

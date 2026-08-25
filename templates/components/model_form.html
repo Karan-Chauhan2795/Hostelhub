@@ -1,0 +1,16 @@
+<section class="page-card form-card">
+  <h1>{{ form_title|default:"Update record" }}</h1>
+  <p>{{ form_intro|default:"Complete the details below and save your changes." }}</p>
+  <form method="post" class="data-form">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+      </div>
+    {% endfor %}
+    {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    <div class="form-actions"><a class="btn btn-secondary" href="{{ cancel_url|default:'../' }}">Cancel</a><button class="btn btn-primary" type="submit">Save</button></div>
+  </form>
+</section>

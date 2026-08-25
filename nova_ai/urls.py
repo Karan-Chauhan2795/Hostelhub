@@ -5,5 +5,5 @@ from . import views
 app_name = "nova_ai"
 
 urlpatterns = [
-    path("", views.NovaAIChatView.as_view(), name="chat"),
+    path("chat/", views.NovaAIChatView.as_view(), name="chat"),
 ]

@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Create Student{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Create Student</h1>
-  <p>This is a placeholder page for the Create Student feature.</p>
-</div>
-{% endblock %}
+{% block title %}Add Student | HostelHub{% endblock %}
+{% block content %}{% include "components/model_form.html" with form_title="Add student" form_intro="Create a resident record for an existing student account." cancel_url="/students/" %}{% endblock %}

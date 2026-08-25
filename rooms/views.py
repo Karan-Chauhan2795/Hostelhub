@@ -1,6 +1,10 @@
-from django.views.generic import TemplateView
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, TemplateView, UpdateView
 
 from accounts.mixins import RoleRequiredMixin
+from .forms import RoomForm
+from .models import Room
 
 
 class RoomManagementView(RoleRequiredMixin, TemplateView):
@@ -9,9 +13,24 @@ class RoomManagementView(RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["rooms"] = [
-            {"number": "A-101", "type": "Double", "status": "Occupied", "capacity": "2/2"},
-            {"number": "B-204", "type": "Triple", "status": "Partially Occupied", "capacity": "1/2"},
-            {"number": "C-305", "type": "Single", "status": "Vacant", "capacity": "0/1"},
-        ]
+        context["rooms"] = Room.objects.all()
         return context
+
+
+class RoomCreateView(RoleRequiredMixin, CreateView):
+    template_name = "rooms/room_create.html"
+    form_class = RoomForm
+    success_url = reverse_lazy("rooms:room_management")
+    allowed_roles = ("ADMIN", "WARDEN")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Room added.")
+        return super().form_valid(form)
+
+
+class RoomUpdateView(RoleRequiredMixin, UpdateView):
+    template_name = "rooms/room_update.html"
+    form_class = RoomForm
+    model = Room
+    success_url = reverse_lazy("rooms:room_management")
+    allowed_roles = ("ADMIN", "WARDEN")

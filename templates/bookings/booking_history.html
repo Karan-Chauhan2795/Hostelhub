@@ -1,8 +1,3 @@
 {% extends "base.html" %}
-{% block title %}Booking History{% endblock %}
-{% block content %}
-<div class="page-card">
-  <h1>Booking History</h1>
-  <p>This is a placeholder page for the Booking History feature.</p>
-</div>
-{% endblock %}
+{% block title %}Booking History | HostelHub{% endblock %}
+{% block content %}<section class="card table-card"><div class="card-heading"><div><p class="eyebrow">Room requests</p><h2>Booking history</h2></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Room</th><th>Status</th><th>Requested</th></tr></thead><tbody>{% for booking in object_list %}<tr><td>{{ booking.room }}</td><td>{{ booking.get_status_display }}</td><td>{{ booking.requested_at|date:"d M Y" }}</td></tr>{% empty %}<tr><td colspan="3">No booking history yet.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}

@@ -1,5 +1,1 @@
-from django.db import models
-
-
-class Dashboard(models.Model):
-    pass
+# Dashboard values are computed from the operational models; no dashboard table is required.

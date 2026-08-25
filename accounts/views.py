@@ -2,9 +2,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import redirect, render
-from django.views.generic import TemplateView, View
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView, UpdateView, View
 
-from .forms import LoginForm, StudentSignupForm
+from .forms import LoginForm, ProfileForm, StudentSignupForm
 from .mixins import RoleRequiredMixin
 
 User = get_user_model()
@@ -89,7 +90,12 @@ class StudentSignupView(View):
     def post(self, request, *args, **kwargs):
         form = StudentSignupForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            from students.models import Student
+            Student.objects.get_or_create(
+                user=user,
+                defaults={"roll_number": f"STU-{user.pk:06d}", "course": "Not provided"},
+            )
             messages.success(request, "Student account created successfully. Please login.")
             return redirect("accounts:login")
         return render(request, self.template_name, {"form": form})
@@ -105,13 +111,28 @@ class ProfileView(RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        student = getattr(self.request.user, "student_profile", None) if self.request.user.role == User.Role.STUDENT else None
         context["profile_data"] = {
             "full_name": self.request.user.get_full_name() or self.request.user.username,
-            "email": self.request.user.email or "student@hostelhub.edu",
+            "email": self.request.user.email or "Not provided",
             "role": self.request.user.get_role_display(),
-            "contact": "+91 98765 43210",
-            "room": "B-204",
-            "phone": "+91 99999 88888",
-            "guardian": "Mr. S. Sharma",
+            "contact": self.request.user.phone_number or "Not provided",
+            "room": student.room.number if student and student.room else "Not assigned",
+            "phone": self.request.user.phone_number or "Not provided",
+            "guardian": student.emergency_contact if student and student.emergency_contact else "Not provided",
         }
         return context
+
+
+class ProfileUpdateView(RoleRequiredMixin, UpdateView):
+    template_name = "accounts/edit_profile.html"
+    form_class = ProfileForm
+    success_url = reverse_lazy("accounts:profile")
+    allowed_roles = (User.Role.ADMIN, User.Role.WARDEN, User.Role.STUDENT)
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        messages.success(self.request, "Profile updated.")
+        return super().form_valid(form)
