@@ -189,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const nova = document.querySelector("[data-nova]");
   if (nova) {
     const panel = nova.querySelector("[data-nova-panel]");
-    const intro = nova.querySelector("[data-nova-intro]");
     const openButton = nova.querySelector("[data-nova-open]");
     const messages = nova.querySelector("[data-nova-messages]");
     const form = nova.querySelector("[data-nova-form]");
@@ -218,7 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
       panel.hidden = !isOpen;
       openButton.hidden = isOpen;
       openButton.setAttribute("aria-expanded", String(isOpen));
-      intro.hidden = true;
       if (isOpen) {
         input.focus();
       } else {
@@ -228,14 +226,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const openNova = () => setNovaOpen(true);
     const closeNova = () => setNovaOpen(false);
     openButton.addEventListener("click", openNova);
-    nova.querySelector("[data-nova-close]").addEventListener("click", closeNova);
-    nova.querySelector("[data-nova-clear]").addEventListener("click", () => { history = []; window.localStorage.removeItem(storageKey); renderHistory(); });
+    nova.querySelector("[data-nova-close]").addEventListener("click", (event) => {
+      event.preventDefault();
+      closeNova();
+    });
+    nova.querySelector("[data-nova-clear]").addEventListener("click", () => {
+      if (window.confirm("Clear chat history?\n\nAre you sure you want to clear your Nova AI chat history? This action cannot be undone.")) {
+        history = [];
+        window.localStorage.removeItem(storageKey);
+        renderHistory();
+      }
+    });
     document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !panel.hidden) closeNova(); });
     renderHistory();
-
-    // A single launch-page greeting; it never opens the panel or repeats.
-    intro.hidden = false;
-    window.setTimeout(() => { intro.hidden = true; }, 3500);
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
