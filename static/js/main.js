@@ -190,6 +190,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (nova) {
     const panel = nova.querySelector("[data-nova-panel]");
     const openButton = nova.querySelector("[data-nova-open]");
+    const confirmation = nova.querySelector("[data-nova-confirm]");
+    const clearButton = nova.querySelector("[data-nova-clear]");
+    const cancelClearButton = nova.querySelector("[data-nova-confirm-cancel]");
+    const confirmClearButton = nova.querySelector("[data-nova-confirm-clear]");
     const messages = nova.querySelector("[data-nova-messages]");
     const form = nova.querySelector("[data-nova-form]");
     const input = nova.querySelector("[data-nova-input]");
@@ -213,32 +217,43 @@ document.addEventListener("DOMContentLoaded", () => {
       history.forEach(({ role, text }) => renderMessage(role === "model" ? "assistant" : role, text));
     };
     const saveHistory = () => window.localStorage.setItem(storageKey, JSON.stringify(history.slice(-30)));
-    const setNovaOpen = (isOpen) => {
+    const setNovaOpen = (isOpen, shouldFocus = true) => {
       panel.hidden = !isOpen;
       openButton.hidden = isOpen;
       openButton.setAttribute("aria-expanded", String(isOpen));
-      if (isOpen) {
+      if (isOpen && shouldFocus) {
         input.focus();
-      } else {
+      } else if (!isOpen && shouldFocus) {
         openButton.focus();
       }
     };
     const openNova = () => setNovaOpen(true);
     const closeNova = () => setNovaOpen(false);
+    const closeConfirmation = () => { confirmation.hidden = true; };
     openButton.addEventListener("click", openNova);
     nova.querySelector("[data-nova-close]").addEventListener("click", (event) => {
       event.preventDefault();
       closeNova();
     });
-    nova.querySelector("[data-nova-clear]").addEventListener("click", () => {
-      if (window.confirm("Clear chat history?\n\nAre you sure you want to clear your Nova AI chat history? This action cannot be undone.")) {
-        history = [];
-        window.localStorage.removeItem(storageKey);
-        renderHistory();
-      }
+    clearButton.addEventListener("click", () => {
+      confirmation.hidden = false;
+      cancelClearButton.focus();
     });
-    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !panel.hidden) closeNova(); });
+    cancelClearButton.addEventListener("click", closeConfirmation);
+    confirmClearButton.addEventListener("click", () => {
+      history = [];
+      window.localStorage.removeItem(storageKey);
+      renderHistory();
+      closeConfirmation();
+    });
+    confirmation.addEventListener("click", (event) => { if (event.target === confirmation) closeConfirmation(); });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (!confirmation.hidden) closeConfirmation();
+      else if (!panel.hidden) closeNova();
+    });
     renderHistory();
+    setNovaOpen(false, false);
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();

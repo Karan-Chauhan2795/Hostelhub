@@ -6,4 +6,7 @@
     <div class="nova-actions"><button type="button" data-nova-clear>Clear chat history</button></div>
     <form class="nova-form" data-nova-form><label class="sr-only" for="nova-message">Ask Nova</label><textarea id="nova-message" data-nova-input rows="1" maxlength="1200" placeholder="Ask Nova about HostelHub…"></textarea><button class="btn btn-primary" type="submit" data-nova-send>Send</button></form>
   </section>
+  <section class="nova-confirm" data-nova-confirm hidden role="dialog" aria-modal="true" aria-labelledby="nova-confirm-title">
+    <div class="nova-confirm-card"><h2 id="nova-confirm-title">Clear chat history?</h2><p>Are you sure you want to clear your Nova AI chat history? This action cannot be undone.</p><div class="nova-confirm-actions"><button class="btn btn-secondary" type="button" data-nova-confirm-cancel>Cancel</button><button class="btn btn-primary" type="button" data-nova-confirm-clear>Clear history</button></div></div>
+  </section>
 </section>
