@@ -1,11 +1,11 @@
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from accounts.mixins import RoleRequiredMixin
 from students.models import Student
-from .forms import LeaveRequestForm
+from .forms import LeaveRequestForm, LeaveStatusForm
 from .models import LeaveRequest
 
 
@@ -46,3 +46,15 @@ class LeaveDetailView(RoleRequiredMixin, DetailView):
     def get_queryset(self):
         queryset = LeaveRequest.objects.select_related("student__user")
         return queryset.filter(student__user=self.request.user) if self.request.user.role == "STUDENT" else queryset
+
+
+class LeaveStatusUpdateView(RoleRequiredMixin, UpdateView):
+    model = LeaveRequest
+    form_class = LeaveStatusForm
+    http_method_names = ["post"]
+    success_url = reverse_lazy("leave_management:leave_list")
+    allowed_roles = ("ADMIN", "WARDEN")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Leave request status updated.")
+        return super().form_valid(form)

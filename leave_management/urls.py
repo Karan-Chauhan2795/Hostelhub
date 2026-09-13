@@ -8,4 +8,5 @@ urlpatterns = [
     path("", views.LeaveListView.as_view(), name="leave_list"),
     path("apply/", views.LeaveApplyView.as_view(), name="leave_apply"),
     path("<int:pk>/", views.LeaveDetailView.as_view(), name="leave_detail"),
+    path("<int:pk>/status/", views.LeaveStatusUpdateView.as_view(), name="leave_status"),
 ]

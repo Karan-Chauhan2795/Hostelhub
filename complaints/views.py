@@ -5,7 +5,7 @@ from django.views.generic import CreateView, TemplateView, UpdateView
 
 from accounts.mixins import RoleRequiredMixin
 from students.models import Student
-from .forms import ComplaintForm
+from .forms import ComplaintForm, ComplaintStatusForm
 from .models import Complaint
 
 
@@ -50,3 +50,15 @@ class ComplaintUpdateView(RoleRequiredMixin, UpdateView):
 
     def get_queryset(self):
         return Complaint.objects.filter(student__user=self.request.user)
+
+
+class ComplaintStatusUpdateView(RoleRequiredMixin, UpdateView):
+    model = Complaint
+    form_class = ComplaintStatusForm
+    http_method_names = ["post"]
+    success_url = reverse_lazy("complaints:complaint_management")
+    allowed_roles = ("ADMIN", "WARDEN")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Complaint status updated.")
+        return super().form_valid(form)

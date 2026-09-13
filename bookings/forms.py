@@ -13,3 +13,9 @@ class BookingForm(forms.ModelForm):
         if room.occupied_count >= room.capacity:
             raise forms.ValidationError("This room is already at capacity.")
         return room
+
+
+class BookingStatusForm(forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = ["status"]

@@ -6,7 +6,7 @@
         <thead><tr><th>ID</th><th>Student</th><th>Issue</th><th>Status</th></tr></thead>
         <tbody>
             {% for complaint in complaints %}
-            <tr><td><span class="ticket-id">#{{ complaint.id }}</span></td><td><span class="table-person">{{ complaint.student.user.get_full_name|default:complaint.student.user.username|slice:":1" }}</span><strong>{{ complaint.student.user.get_full_name|default:complaint.student.user.username }}</strong></td><td>{{ complaint.subject }}</td><td><span class="status-pill">{{ complaint.get_status_display }}</span></td></tr>
+            <tr><td><span class="ticket-id">#{{ complaint.id }}</span></td><td><span class="table-person">{{ complaint.student.user.get_full_name|default:complaint.student.user.username|slice:":1" }}</span><strong>{{ complaint.student.user.get_full_name|default:complaint.student.user.username }}</strong></td><td>{{ complaint.subject }}</td><td>{% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}<form method="post" action="{% url 'complaints:complaint_status' complaint.pk %}">{% csrf_token %}<select name="status" onchange="this.form.submit()">{% for value, label in complaint.Status.choices %}<option value="{{ value }}" {% if complaint.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></form>{% else %}<span class="status-pill">{{ complaint.get_status_display }}</span>{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table></div><div class="table-footer"><span>Showing {{ complaints|length }} requests</span><div class="pagination"><button disabled>‹</button><button class="active">1</button><button>2</button><button>3</button><button>›</button></div></div></section>

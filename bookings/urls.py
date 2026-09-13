@@ -8,4 +8,5 @@ urlpatterns = [
     path("", views.BookingListView.as_view(), name="booking_list"),
     path("create/", views.BookingCreateView.as_view(), name="booking_create"),
     path("history/", views.BookingHistoryView.as_view(), name="booking_history"),
+    path("<int:pk>/status/", views.BookingStatusUpdateView.as_view(), name="booking_status"),
 ]

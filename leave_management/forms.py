@@ -13,3 +13,9 @@ class LeaveRequestForm(forms.ModelForm):
         if cleaned_data.get("start_date") and cleaned_data.get("end_date") and cleaned_data["end_date"] < cleaned_data["start_date"]:
             self.add_error("end_date", "The return date cannot be before the departure date.")
         return cleaned_data
+
+
+class LeaveStatusForm(forms.ModelForm):
+    class Meta:
+        model = LeaveRequest
+        fields = ["status"]
