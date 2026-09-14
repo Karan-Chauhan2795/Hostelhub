@@ -31,7 +31,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         user_model = get_user_model()
         legacy_emails = ("admin@hostelhub.edu", "warden@hostelhub.edu", "student@hostelhub.edu", "admin@hostelhub.demo", *[item[1] for item in self.accounts])
-        user_model.objects.filter(email__in=legacy_emails).exclude(username__in=[item[0] for item in self.accounts]).update(is_active=False)
+        legacy_usernames = ("admin", "warden1", "warden2", "student1", "student2", "student3")
+        # Retain legacy rows for auditability without allowing their duplicate
+        # email addresses to intercept an email-based login for a demo account.
+        user_model.objects.filter(email__in=legacy_emails).exclude(username__in=[item[0] for item in self.accounts]).update(is_active=False, email="")
+        user_model.objects.filter(username__in=legacy_usernames).exclude(username__in=[item[0] for item in self.accounts]).update(is_active=False, email="")
         users, credentials = {}, []
         for username, email, first_name, last_name, role_name, is_superuser in self.accounts:
             user, created = user_model.objects.get_or_create(username=username)
