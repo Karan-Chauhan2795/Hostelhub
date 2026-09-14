@@ -13,10 +13,16 @@ class LeaveListView(RoleRequiredMixin, ListView):
     model = LeaveRequest
     template_name = "leave_management/leave_list.html"
     allowed_roles = ("ADMIN", "WARDEN", "STUDENT")
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = LeaveRequest.objects.select_related("student__user")
-        return queryset.filter(student__user=self.request.user) if self.request.user.role == "STUDENT" else queryset
+        if self.request.user.role == "STUDENT":
+            queryset = queryset.filter(student__user=self.request.user)
+        status = self.request.GET.get("status")
+        if status in LeaveRequest.Status.values:
+            queryset = queryset.filter(status=status)
+        return queryset
 
 
 class LeaveApplyView(RoleRequiredMixin, CreateView):
@@ -52,9 +58,11 @@ class LeaveStatusUpdateView(RoleRequiredMixin, UpdateView):
     model = LeaveRequest
     form_class = LeaveStatusForm
     http_method_names = ["post"]
-    success_url = reverse_lazy("leave_management:leave_list")
     allowed_roles = ("ADMIN", "WARDEN")
 
     def form_valid(self, form):
         messages.success(self.request, "Leave request status updated.")
         return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.request.POST.get("next") or reverse_lazy("leave_management:leave_list")

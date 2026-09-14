@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.db.models import Q
 from django.views.generic import CreateView, ListView, UpdateView
 
 from accounts.mixins import RoleRequiredMixin
@@ -13,11 +14,18 @@ class BookingListView(RoleRequiredMixin, ListView):
     model = Booking
     template_name = "bookings/booking_list.html"
     allowed_roles = ("ADMIN", "WARDEN", "STUDENT")
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Booking.objects.select_related("student__user", "room")
         if self.request.user.role == "STUDENT":
-            return queryset.filter(student__user=self.request.user)
+            queryset = queryset.filter(student__user=self.request.user)
+        status = self.request.GET.get("status")
+        if status in Booking.Status.values:
+            queryset = queryset.filter(status=status)
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            queryset = queryset.filter(Q(room__number__icontains=query) | Q(student__user__first_name__icontains=query) | Q(student__user__last_name__icontains=query) | Q(student__roll_number__icontains=query))
         return queryset
 
 
@@ -50,7 +58,6 @@ class BookingStatusUpdateView(RoleRequiredMixin, UpdateView):
     model = Booking
     form_class = BookingStatusForm
     http_method_names = ["post"]
-    success_url = reverse_lazy("bookings:booking_list")
     allowed_roles = ("ADMIN", "WARDEN")
 
     def form_valid(self, form):
@@ -58,12 +65,15 @@ class BookingStatusUpdateView(RoleRequiredMixin, UpdateView):
         if booking.status == Booking.Status.CONFIRMED:
             room = booking.room
             if booking.student.room_id not in (None, room.id):
-                form.add_error("status", "This resident already has a different room allocation.")
-                return self.form_invalid(form)
+                messages.error(self.request, "This resident already has a different room allocation.")
+                return redirect(self.get_success_url())
             if booking.student.room_id != room.id and room.occupied_count >= room.capacity:
-                form.add_error("status", "This room is already at capacity.")
-                return self.form_invalid(form)
+                messages.error(self.request, "This room is already at capacity.")
+                return redirect(self.get_success_url())
             booking.student.room = room
             booking.student.save(update_fields=["room"])
         messages.success(self.request, "Booking status updated.")
         return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.request.POST.get("next") or reverse_lazy("bookings:booking_list")

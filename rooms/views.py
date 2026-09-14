@@ -1,20 +1,32 @@
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView, UpdateView
+from django.views.generic import CreateView, ListView, UpdateView
 
 from accounts.mixins import RoleRequiredMixin
 from .forms import RoomForm
 from .models import Room
 
 
-class RoomManagementView(RoleRequiredMixin, TemplateView):
+class RoomManagementView(RoleRequiredMixin, ListView):
+    model = Room
     template_name = "rooms/room_management.html"
     allowed_roles = ("ADMIN", "WARDEN")
+    paginate_by = 10
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["rooms"] = Room.objects.all()
-        return context
+    def get_queryset(self):
+        rooms = Room.objects.all()
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            from django.db.models import Q
+            rooms = rooms.filter(Q(number__icontains=query) | Q(room_type__icontains=query))
+        status = self.request.GET.get("status")
+        if status == "VACANT":
+            rooms = [room for room in rooms if room.occupied_count == 0]
+        elif status == "AVAILABLE":
+            rooms = [room for room in rooms if room.occupied_count < room.capacity]
+        elif status == "OCCUPIED":
+            rooms = [room for room in rooms if room.occupied_count >= room.capacity]
+        return rooms
 
 
 class RoomCreateView(RoleRequiredMixin, CreateView):

@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.contrib.auth.views import PasswordResetCompleteView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.views.generic import TemplateView, UpdateView, View
 
 from .forms import LoginForm, ProfileForm, StudentSignupForm
@@ -47,7 +48,7 @@ class LoginView(View):
 
             if authenticated_user is not None:
                 login(request, authenticated_user)
-                request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+                request.session.set_expiry(settings.SESSION_COOKIE_AGE if form.cleaned_data["remember_me"] else 0)
                 messages.success(
                     request,
                     f"Welcome back, {authenticated_user.get_full_name() or authenticated_user.username}!",
@@ -101,8 +102,24 @@ class StudentSignupView(View):
         return render(request, self.template_name, {"form": form})
 
 
-class ForgotPasswordView(TemplateView):
+class ForgotPasswordView(PasswordResetView):
     template_name = "accounts/forgot_password.html"
+    email_template_name = "accounts/password_reset_email.txt"
+    subject_template_name = "accounts/password_reset_subject.txt"
+    success_url = reverse_lazy("accounts:password_reset_done")
+
+
+class ForgotPasswordDoneView(PasswordResetDoneView):
+    template_name = "accounts/password_reset_done.html"
+
+
+class ResetPasswordConfirmView(PasswordResetConfirmView):
+    template_name = "accounts/password_reset_confirm.html"
+    success_url = reverse_lazy("accounts:password_reset_complete")
+
+
+class ResetPasswordCompleteView(PasswordResetCompleteView):
+    template_name = "accounts/password_reset_complete.html"
 
 
 class ProfileView(RoleRequiredMixin, TemplateView):

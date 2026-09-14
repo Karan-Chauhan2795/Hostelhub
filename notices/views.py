@@ -11,6 +11,7 @@ class NoticeListView(RoleRequiredMixin, ListView):
     model = Notice
     template_name = "notices/notice_list.html"
     allowed_roles = ("ADMIN", "WARDEN", "STUDENT")
+    paginate_by = 10
 
 
 class NoticeDetailView(RoleRequiredMixin, DetailView):

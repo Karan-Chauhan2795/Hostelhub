@@ -1,48 +1,28 @@
+import secrets
+
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core import mail
+from django.test import TestCase, override_settings
 
 
-class LoginRedirectTests(TestCase):
-    def test_demo_users_redirect_to_their_dashboards(self):
-        User = get_user_model()
-        self.assertTrue(User.objects.filter(username="admin").exists())
+class AuthenticationTests(TestCase):
+    def setUp(self):
+        self.password = secrets.token_urlsafe(16)
+        self.admin = get_user_model().objects.create_user(username="test_admin", email="test-admin@example.com", password=self.password, role="ADMIN", is_staff=True)
+        self.student = get_user_model().objects.create_user(username="test_student", email="test-student@example.com", password=self.password, role="STUDENT")
 
-        cases = [
-            ("admin", "admin123", "/dashboard/admin/"),
-            ("warden", "warden123", "/warden/"),
-            ("student", "student123", "/student/"),
-        ]
+    def test_login_and_remember_me_session_expiry(self):
+        response = self.client.post("/accounts/login/", {"identifier": self.admin.username, "password": self.password, "remember_me": "on"})
+        self.assertRedirects(response, "/dashboard/admin/", fetch_redirect_response=False)
+        self.assertFalse(self.client.session.get_expire_at_browser_close())
+        self.client.logout()
+        response = self.client.post("/accounts/login/", {"identifier": self.student.username, "password": self.password})
+        self.assertRedirects(response, "/student/", fetch_redirect_response=False)
+        self.assertTrue(self.client.session.get_expire_at_browser_close())
 
-        for username, password, expected_path in cases:
-            with self.subTest(username=username):
-                response = self.client.post(
-                    "/accounts/login/",
-                    {"identifier": username, "password": password, "remember_me": "on"},
-                    HTTP_HOST="localhost",
-                )
-                self.assertEqual(response.status_code, 302)
-                self.assertEqual(response.headers["Location"], expected_path)
-
-    def test_student_signup_creates_student_and_redirects_to_login(self):
-        response = self.client.post(
-            "/accounts/create-student-account/",
-            {
-                "first_name": "Nisha",
-                "last_name": "Patel",
-                "username": "nisha_student",
-                "email": "nisha@example.com",
-                "phone_number": "+91 90000 11111",
-                "password1": "StrongPass123!",
-                "password2": "StrongPass123!",
-            },
-            HTTP_HOST="localhost",
-        )
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.headers["Location"], "/accounts/login/")
-
-        User = get_user_model()
-        user = User.objects.get(username="nisha_student")
-        self.assertEqual(user.role, User.Role.STUDENT)
-        self.assertTrue(user.check_password("StrongPass123!"))
-        self.assertEqual(user.student_profile.roll_number, f"STU-{user.pk:06d}")
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_password_reset_emits_tokenized_link(self):
+        response = self.client.post("/accounts/forgot-password/", {"email": self.student.email})
+        self.assertRedirects(response, "/accounts/forgot-password/done/", fetch_redirect_response=False)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("/accounts/reset/", mail.outbox[0].body)

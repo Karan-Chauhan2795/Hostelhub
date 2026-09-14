@@ -1,3 +1,7 @@
-<div class="pagination">
-  <p>Pagination placeholder</p>
-</div>
+{% if is_paginated %}
+<nav class="pagination" aria-label="Pagination">
+  {% if page_obj.has_previous %}<a href="?{% if request.GET.q %}q={{ request.GET.q|urlencode }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status|urlencode }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous page">‹</a>{% else %}<span class="is-disabled">‹</span>{% endif %}
+  {% for page_number in paginator.page_range %}{% if page_number == page_obj.number %}<span class="active">{{ page_number }}</span>{% else %}<a href="?{% if request.GET.q %}q={{ request.GET.q|urlencode }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status|urlencode }}&amp;{% endif %}page={{ page_number }}">{{ page_number }}</a>{% endif %}{% endfor %}
+  {% if page_obj.has_next %}<a href="?{% if request.GET.q %}q={{ request.GET.q|urlencode }}&amp;{% endif %}{% if request.GET.status %}status={{ request.GET.status|urlencode }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next page">›</a>{% else %}<span class="is-disabled">›</span>{% endif %}
+</nav>
+{% endif %}

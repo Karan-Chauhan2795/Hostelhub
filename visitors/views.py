@@ -11,6 +11,7 @@ class VisitorListView(RoleRequiredMixin, ListView):
     model = Visitor
     template_name = "visitors/visitor_list.html"
     allowed_roles = ("ADMIN", "WARDEN")
+    paginate_by = 10
 
     def get_queryset(self):
         return Visitor.objects.select_related("student__user")
