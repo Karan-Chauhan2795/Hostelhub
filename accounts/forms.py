@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
 
 User = get_user_model()
 
@@ -80,3 +80,7 @@ class ProfileForm(forms.ModelForm):
             "email": forms.EmailInput(attrs={"autocomplete": "email"}),
             "phone_number": forms.TextInput(attrs={"autocomplete": "tel"}),
         }
+
+
+class AdminPasswordResetForm(SetPasswordForm):
+    """Uses Django's password validators for an administrator-assisted reset."""

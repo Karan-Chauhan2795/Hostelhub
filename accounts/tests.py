@@ -1,7 +1,11 @@
 import secrets
+import re
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.conf import settings
 from django.test import TestCase, override_settings
 
 from students.models import Student
@@ -17,10 +21,14 @@ class AuthenticationTests(TestCase):
         response = self.client.post("/accounts/login/", {"identifier": self.admin.username, "password": self.password, "remember_me": "on"})
         self.assertRedirects(response, "/dashboard/admin/", fetch_redirect_response=False)
         self.assertFalse(self.client.session.get_expire_at_browser_close())
+        self.assertEqual(self.client.session.get_expiry_age(), settings.SESSION_COOKIE_AGE)
         self.client.logout()
         response = self.client.post("/accounts/login/", {"identifier": self.student.username, "password": self.password})
         self.assertRedirects(response, "/student/", fetch_redirect_response=False)
         self.assertTrue(self.client.session.get_expire_at_browser_close())
+        self.assertTrue(self.client.session.get_expire_at_browser_close())
+        self.client.post("/accounts/logout/")
+        self.assertNotIn("_auth_user_id", self.client.session)
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_password_reset_emits_tokenized_link(self):
@@ -28,6 +36,15 @@ class AuthenticationTests(TestCase):
         self.assertRedirects(response, "/accounts/forgot-password/done/", fetch_redirect_response=False)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("/accounts/reset/", mail.outbox[0].body)
+        reset_url = re.search(r"https?://[^\s]+/accounts/reset/[^\s]+", mail.outbox[0].body).group()
+        reset_path = urlparse(reset_url).path
+        response = self.client.get(reset_path)
+        self.assertEqual(response.status_code, 302)
+        reset_path = urlparse(response["Location"]).path
+        response = self.client.post(reset_path, {"new_password1": "New-valid-password-123", "new_password2": "New-valid-password-123"})
+        self.assertRedirects(response, "/accounts/reset/complete/", fetch_redirect_response=False)
+        self.student.refresh_from_db()
+        self.assertTrue(self.student.check_password("New-valid-password-123"))
 
 
 class ProfilePermissionTests(TestCase):
@@ -71,4 +88,55 @@ class ProfilePermissionTests(TestCase):
         response = self.client.get("/students/")
         self.assertRedirects(response, "/accounts/login/", fetch_redirect_response=False)
         response = self.client.post(f"/students/{self.student.pk}/edit/", {"roll_number": "CHANGED"})
+        self.assertRedirects(response, "/accounts/login/", fetch_redirect_response=False)
+
+    def test_admin_assisted_password_reset_is_authorized_and_invalidates_old_password(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            f"/accounts/profiles/{self.warden.pk}/reset-password/",
+            {"new_password1": "Admin-reset-password-123", "new_password2": "Admin-reset-password-123"},
+        )
+        self.assertRedirects(response, f"/accounts/profiles/{self.warden.pk}/", fetch_redirect_response=False)
+        self.warden.refresh_from_db()
+        self.assertTrue(self.warden.check_password("Admin-reset-password-123"))
+        self.assertFalse(self.warden.check_password(self.password))
+
+    def test_student_and_warden_cannot_reset_another_users_password(self):
+        for user in (self.student_user, self.warden):
+            self.client.force_login(user)
+            response = self.client.post(
+                f"/accounts/profiles/{self.warden.pk}/reset-password/",
+                {"new_password1": "Unauthorized-password-123", "new_password2": "Unauthorized-password-123"},
+            )
+            self.assertRedirects(response, "/accounts/login/", fetch_redirect_response=False)
+            self.warden.refresh_from_db()
+            self.assertTrue(self.warden.check_password(self.password))
+            self.client.logout()
+
+    @override_settings(
+        GOOGLE_OAUTH_CLIENT_ID="test-client-id",
+        GOOGLE_OAUTH_CLIENT_SECRET="test-client-secret",
+        GOOGLE_OAUTH_REDIRECT_URI="http://testserver/accounts/google/callback/",
+    )
+    def test_google_login_uses_state_nonce_and_existing_account_role(self):
+        response = self.client.get("/accounts/google/")
+        self.assertEqual(response.status_code, 302)
+        params = parse_qs(urlparse(response["Location"]).query)
+        self.assertEqual(params["client_id"], ["test-client-id"])
+        self.assertIn("state", params)
+        with patch("accounts.views.exchange_google_code", return_value="token"), patch(
+            "accounts.views.verify_google_token",
+            return_value={"email": self.warden.email, "email_verified": True, "nonce": self.client.session["google_oauth_nonce"]},
+        ):
+            response = self.client.get("/accounts/google/callback/", {"state": params["state"][0], "code": "code"})
+        self.assertRedirects(response, "/warden/", fetch_redirect_response=False)
+
+    @override_settings(
+        GOOGLE_OAUTH_CLIENT_ID="test-client-id",
+        GOOGLE_OAUTH_CLIENT_SECRET="test-client-secret",
+        GOOGLE_OAUTH_REDIRECT_URI="http://testserver/accounts/google/callback/",
+    )
+    def test_google_callback_rejects_invalid_state(self):
+        self.client.get("/accounts/google/")
+        response = self.client.get("/accounts/google/callback/", {"state": "forged", "code": "code"})
         self.assertRedirects(response, "/accounts/login/", fetch_redirect_response=False)

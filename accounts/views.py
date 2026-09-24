@@ -1,15 +1,50 @@
+import secrets
+import json
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import PasswordResetCompleteView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
-from django.views.generic import TemplateView, UpdateView, View
+from django.views.generic import FormView, TemplateView, UpdateView, View
 
-from .forms import LoginForm, ProfileForm, StudentSignupForm
+from .forms import AdminPasswordResetForm, LoginForm, ProfileForm, StudentSignupForm
 from .mixins import RoleRequiredMixin
 
 User = get_user_model()
+
+GOOGLE_AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
+
+
+def exchange_google_code(code):
+    data = urlencode(
+        {
+            "code": code,
+            "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+            "client_secret": settings.GOOGLE_OAUTH_CLIENT_SECRET,
+            "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
+            "grant_type": "authorization_code",
+        }
+    )
+    request = Request(GOOGLE_TOKEN_ENDPOINT, data=data.encode(), headers={"Content-Type": "application/x-www-form-urlencoded"})
+    with urlopen(request, timeout=10) as response:
+        return json.loads(response.read())["id_token"]
+
+
+def verify_google_token(token):
+    from google.auth.transport import urllib3 as google_urllib3
+    from google.oauth2 import id_token
+
+    return id_token.verify_oauth2_token(
+        token,
+        google_urllib3.Request(),
+        settings.GOOGLE_OAUTH_CLIENT_ID,
+    )
 
 
 class LoginView(View):
@@ -78,6 +113,56 @@ class LogoutView(View):
             logout(request)
             messages.info(request, "You have been logged out.")
         return redirect("dashboard:landing")
+
+
+class GoogleLoginView(View):
+    """Start the Google OIDC authorization-code flow with CSRF/replay guards."""
+
+    def get(self, request, *args, **kwargs):
+        if not settings.GOOGLE_OAUTH_CLIENT_ID or not settings.GOOGLE_OAUTH_CLIENT_SECRET or not settings.GOOGLE_OAUTH_REDIRECT_URI:
+            messages.error(request, "Google sign-in is not configured yet.")
+            return redirect("accounts:login")
+        state = secrets.token_urlsafe(32)
+        nonce = secrets.token_urlsafe(32)
+        request.session["google_oauth_state"] = state
+        request.session["google_oauth_nonce"] = nonce
+        query = urlencode({
+            "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+            "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
+            "response_type": "code",
+            "scope": "openid email profile",
+            "state": state,
+            "nonce": nonce,
+        })
+        return redirect(f"{GOOGLE_AUTHORIZATION_ENDPOINT}?{query}")
+
+
+class GoogleCallbackView(View):
+    def get(self, request, *args, **kwargs):
+        state = request.session.pop("google_oauth_state", "")
+        nonce = request.session.pop("google_oauth_nonce", "")
+        if not state or not secrets.compare_digest(state, request.GET.get("state", "")):
+            messages.error(request, "Google sign-in could not be verified. Please try again.")
+            return redirect("accounts:login")
+        if request.GET.get("error") or not request.GET.get("code"):
+            messages.error(request, "Google sign-in was cancelled or failed.")
+            return redirect("accounts:login")
+        try:
+            claims = verify_google_token(exchange_google_code(request.GET["code"]))
+        except (HTTPError, ImportError, KeyError, URLError, ValueError):
+            messages.error(request, "Google sign-in could not be completed. Please try again.")
+            return redirect("accounts:login")
+        if claims.get("nonce") != nonce or not claims.get("email_verified") or not claims.get("email"):
+            messages.error(request, "Google did not provide a verified email address.")
+            return redirect("accounts:login")
+        users = User.objects.filter(email__iexact=claims["email"], is_active=True)
+        if users.count() != 1:
+            messages.error(request, "No single HostelHub account matches this Google email. Contact an administrator.")
+            return redirect("accounts:login")
+        user = users.get()
+        login(request, user)
+        messages.success(request, f"Welcome back, {user.get_full_name() or user.username}!")
+        return redirect(LoginView()._redirect_url_for_role(user))
 
 
 class StudentSignupView(View):
@@ -190,6 +275,31 @@ class ManagedProfileUpdateView(RoleRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Profile updated.")
         return super().form_valid(form)
+
+
+class ManagedPasswordResetView(RoleRequiredMixin, FormView):
+    """Secure, administrator-assisted recovery for existing residents/staff."""
+
+    template_name = "accounts/admin_password_reset.html"
+    form_class = AdminPasswordResetForm
+    allowed_roles = (User.Role.ADMIN,)
+
+    def get_target_user(self):
+        return get_object_or_404(
+            User,
+            pk=self.kwargs["pk"],
+            role__in=(User.Role.STUDENT, User.Role.WARDEN),
+        )
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.get_target_user()
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, "Password reset. Give the new password to the account holder securely.")
+        return redirect("accounts:managed_profile", pk=self.get_target_user().pk)
 
 
 class WardenManagementView(RoleRequiredMixin, TemplateView):
