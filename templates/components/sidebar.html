@@ -20,6 +20,6 @@
   <div class="sidebar-label sidebar-label-bottom">Personal</div>
   <nav class="side-nav side-nav-bottom">
     <a href="{% url 'accounts:profile' %}" class="{% if request.resolver_match.app_name == 'accounts' %}is-active{% endif %}"><i class="fa-regular fa-user"></i><span>My profile</span></a>
-    {% if request.user.role == "ADMIN" %}<a href="{% url 'reports:reports_dashboard' %}" class="{% if request.resolver_match.app_name == 'reports' %}is-active{% endif %}"><i class="fa-solid fa-chart-line"></i><span>Reports</span></a>{% endif %}
+    {% if request.user.role == "ADMIN" %}<a href="{% url 'accounts:warden_management' %}" class="{% if request.resolver_match.url_name == 'warden_management' %}is-active{% endif %}"><i class="fa-solid fa-user-shield"></i><span>Wardens</span></a><a href="{% url 'reports:reports_dashboard' %}" class="{% if request.resolver_match.app_name == 'reports' %}is-active{% endif %}"><i class="fa-solid fa-chart-line"></i><span>Reports</span></a>{% endif %}
   </nav>
 </aside>

@@ -11,7 +11,7 @@ from .models import Student
 class StudentManagementView(RoleRequiredMixin, ListView):
     model = Student
     template_name = "students/student_management.html"
-    allowed_roles = ("ADMIN", "WARDEN")
+    allowed_roles = ("ADMIN",)
     paginate_by = 10
 
     def get_queryset(self):
@@ -26,7 +26,7 @@ class StudentCreateView(RoleRequiredMixin, CreateView):
     template_name = "students/student_create.html"
     form_class = StudentForm
     success_url = reverse_lazy("students:student_management")
-    allowed_roles = ("ADMIN", "WARDEN")
+    allowed_roles = ("ADMIN",)
 
     def form_valid(self, form):
         messages.success(self.request, "Student record added.")
@@ -38,4 +38,4 @@ class StudentUpdateView(RoleRequiredMixin, UpdateView):
     form_class = StudentForm
     model = Student
     success_url = reverse_lazy("students:student_management")
-    allowed_roles = ("ADMIN", "WARDEN")
+    allowed_roles = ("ADMIN",)

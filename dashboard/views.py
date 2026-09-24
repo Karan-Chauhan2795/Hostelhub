@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 
 from accounts.mixins import RoleRequiredMixin
+from accounts.models import User
 from bookings.models import Booking
 from complaints.models import Complaint
 from leave_management.models import LeaveRequest
@@ -55,6 +56,7 @@ class AdminDashboardView(RoleRequiredMixin, TemplateView):
         rooms = list(Room.objects.all())
         context["stats"] = [
             {"title": "Total Residents", "value": Student.objects.count(), "change": "Current records"},
+            {"title": "Total Wardens", "value": User.objects.filter(role=User.Role.WARDEN).count(), "change": "Current records"},
             {"title": "Occupied Rooms", "value": sum(room.occupied_count > 0 for room in rooms), "change": f"of {len(rooms)} rooms"},
             {"title": "Open Complaints", "value": Complaint.objects.exclude(status=Complaint.Status.RESOLVED).count(), "change": "Needs attention"},
             {"title": "Pending Bookings", "value": Booking.objects.filter(status=Booking.Status.PENDING).count(), "change": "Awaiting review"},

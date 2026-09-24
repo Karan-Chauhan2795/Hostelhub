@@ -14,4 +14,7 @@ urlpatterns = [
     path("reset/complete/", views.ResetPasswordCompleteView.as_view(), name="password_reset_complete"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path("profile/edit/", views.ProfileUpdateView.as_view(), name="profile_edit"),
+    path("profiles/wardens/", views.WardenManagementView.as_view(), name="warden_management"),
+    path("profiles/<int:pk>/", views.ManagedProfileView.as_view(), name="managed_profile"),
+    path("profiles/<int:pk>/edit/", views.ManagedProfileUpdateView.as_view(), name="managed_profile_edit"),
 ]

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.contrib.auth.views import PasswordResetCompleteView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.views.generic import TemplateView, UpdateView, View
@@ -145,7 +145,7 @@ class ProfileUpdateView(RoleRequiredMixin, UpdateView):
     template_name = "accounts/edit_profile.html"
     form_class = ProfileForm
     success_url = reverse_lazy("accounts:profile")
-    allowed_roles = (User.Role.ADMIN, User.Role.WARDEN, User.Role.STUDENT)
+    allowed_roles = (User.Role.ADMIN,)
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -153,3 +153,50 @@ class ProfileUpdateView(RoleRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Profile updated.")
         return super().form_valid(form)
+
+
+class ManagedProfileView(ProfileView):
+    allowed_roles = (User.Role.ADMIN,)
+
+    def get_context_data(self, **kwargs):
+        context = super(ProfileView, self).get_context_data(**kwargs)
+        profile_user = get_object_or_404(User, pk=self.kwargs["pk"], role__in=(User.Role.STUDENT, User.Role.WARDEN))
+        student = getattr(profile_user, "student_profile", None)
+        context["profile_data"] = {
+            "full_name": profile_user.get_full_name() or profile_user.username,
+            "username": profile_user.username,
+            "email": profile_user.email or "Not provided",
+            "role": profile_user.get_role_display(),
+            "contact": profile_user.phone_number or "Not provided",
+            "room": student.room.number if student and student.room else "Not assigned",
+            "phone": profile_user.phone_number or "Not provided",
+            "guardian": student.emergency_contact if student and student.emergency_contact else "Not provided",
+        }
+        context["managed_profile"] = True
+        return context
+
+
+class ManagedProfileUpdateView(RoleRequiredMixin, UpdateView):
+    template_name = "accounts/edit_profile.html"
+    form_class = ProfileForm
+    allowed_roles = (User.Role.ADMIN,)
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(User, pk=self.kwargs["pk"], role__in=(User.Role.STUDENT, User.Role.WARDEN))
+
+    def get_success_url(self):
+        return reverse_lazy("accounts:managed_profile", kwargs={"pk": self.object.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Profile updated.")
+        return super().form_valid(form)
+
+
+class WardenManagementView(RoleRequiredMixin, TemplateView):
+    template_name = "accounts/warden_management.html"
+    allowed_roles = (User.Role.ADMIN,)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["wardens"] = User.objects.filter(role=User.Role.WARDEN).order_by("username")
+        return context
