@@ -19,5 +19,6 @@ urlpatterns = [
     path("profiles/<int:pk>/edit/", views.ManagedProfileUpdateView.as_view(), name="managed_profile_edit"),
     path("profiles/<int:pk>/reset-password/", views.ManagedPasswordResetView.as_view(), name="managed_password_reset"),
     path("google/", views.GoogleLoginView.as_view(), name="google_login"),
+    path("google/signup/", views.GoogleSignupView.as_view(), name="google_signup"),
     path("google/callback/", views.GoogleCallbackView.as_view(), name="google_callback"),
 ]

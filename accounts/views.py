@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.text import slugify
 from django.contrib.auth.views import PasswordResetCompleteView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.views.generic import FormView, TemplateView, UpdateView, View
 
@@ -140,10 +141,29 @@ class GoogleLoginView(View):
         return redirect(f"{GOOGLE_AUTHORIZATION_ENDPOINT}?{query}")
 
 
+class GoogleSignupView(GoogleLoginView):
+    """Begin Google sign-up; only the callback may create a Student account."""
+
+    def get(self, request, *args, **kwargs):
+        request.session["google_oauth_signup"] = True
+        return super().get(request, *args, **kwargs)
+
+
+def google_username(email):
+    base = slugify(email.split("@", 1)[0])[:140] or "student"
+    username = base
+    suffix = 1
+    while User.objects.filter(username__iexact=username).exists():
+        suffix += 1
+        username = f"{base[:150 - len(str(suffix)) - 1]}-{suffix}"
+    return username
+
+
 class GoogleCallbackView(View):
     def get(self, request, *args, **kwargs):
         state = request.session.pop("google_oauth_state", "")
         nonce = request.session.pop("google_oauth_nonce", "")
+        signup_requested = request.session.pop("google_oauth_signup", False)
         if not state or not secrets.compare_digest(state, request.GET.get("state", "")):
             messages.error(request, "Google sign-in could not be verified. Please try again.")
             return redirect("accounts:login")
@@ -159,6 +179,23 @@ class GoogleCallbackView(View):
             messages.error(request, "Google did not provide a verified email address.")
             return redirect("accounts:login")
         users = User.objects.filter(email__iexact=claims["email"], is_active=True)
+        if users.count() == 0 and signup_requested:
+            from students.models import Student
+
+            name_parts = (claims.get("name") or "").split(maxsplit=1)
+            user = User.objects.create_user(
+                username=google_username(claims["email"]),
+                email=claims["email"],
+                first_name=claims.get("given_name") or (name_parts[0] if name_parts else ""),
+                last_name=claims.get("family_name") or (name_parts[1] if len(name_parts) > 1 else ""),
+                role=User.Role.STUDENT,
+            )
+            user.set_unusable_password()
+            user.save(update_fields=["password"])
+            Student.objects.create(user=user, roll_number=f"STU-{user.pk:06d}", course="Not provided")
+            login(request, user)
+            messages.success(request, "Your Student account has been created with Google.")
+            return redirect("dashboard:student_dashboard")
         if users.count() != 1:
             messages.error(request, "No single HostelHub account matches this Google email. Contact an administrator.")
             return redirect("accounts:login")

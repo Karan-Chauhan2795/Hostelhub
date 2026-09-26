@@ -60,9 +60,9 @@
             <button type="submit" class="btn btn-primary btn-full">Create Account</button>
         </form>
         <div class="or-divider"><span>OR</span></div>
-        <button type="button" class="btn google-btn btn-full" data-auth-notice>
+        <a href="{% url 'accounts:google_signup' %}" class="btn google-btn btn-full">
             Continue with Google
-        </button>
+        </a>
         <div class="auth-links">
             <span>Already have an account?</span>
             <a href="{% url 'accounts:login' %}">Login</a>

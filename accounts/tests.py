@@ -141,6 +141,32 @@ class ProfilePermissionTests(TestCase):
         response = self.client.get("/accounts/google/callback/", {"state": "forged", "code": "code"})
         self.assertRedirects(response, "/accounts/login/", fetch_redirect_response=False)
 
+    @override_settings(
+        GOOGLE_OAUTH_CLIENT_ID="test-client-id",
+        GOOGLE_OAUTH_CLIENT_SECRET="test-client-secret",
+        GOOGLE_OAUTH_REDIRECT_URI="http://testserver/accounts/google/callback/",
+    )
+    def test_google_signup_creates_only_a_verified_student_account(self):
+        response = self.client.get("/accounts/google/signup/")
+        params = parse_qs(urlparse(response["Location"]).query)
+        email = "new.google.student@example.com"
+        with patch("accounts.views.exchange_google_code", return_value="token"), patch(
+            "accounts.views.verify_google_token",
+            return_value={
+                "email": email,
+                "email_verified": True,
+                "nonce": self.client.session["google_oauth_nonce"],
+                "given_name": "Google",
+                "family_name": "Student",
+            },
+        ):
+            response = self.client.get("/accounts/google/callback/", {"state": params["state"][0], "code": "code"})
+        self.assertRedirects(response, "/student/", fetch_redirect_response=False)
+        user = get_user_model().objects.get(email=email)
+        self.assertEqual(user.role, user.Role.STUDENT)
+        self.assertFalse(user.has_usable_password())
+        self.assertTrue(Student.objects.filter(user=user).exists())
+
     def test_google_token_verifier_constructs_a_valid_transport(self):
         from accounts.views import verify_google_token
 
