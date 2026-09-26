@@ -37,12 +37,15 @@ def exchange_google_code(code):
 
 
 def verify_google_token(token):
+    import urllib3
+
     from google.auth.transport import urllib3 as google_urllib3
     from google.oauth2 import id_token
 
     return id_token.verify_oauth2_token(
         token,
-        google_urllib3.Request(),
+        # google-auth's urllib3 transport needs an explicit connection pool.
+        google_urllib3.Request(urllib3.PoolManager()),
         settings.GOOGLE_OAUTH_CLIENT_ID,
     )
 

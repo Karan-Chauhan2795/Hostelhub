@@ -140,3 +140,10 @@ class ProfilePermissionTests(TestCase):
         self.client.get("/accounts/google/")
         response = self.client.get("/accounts/google/callback/", {"state": "forged", "code": "code"})
         self.assertRedirects(response, "/accounts/login/", fetch_redirect_response=False)
+
+    def test_google_token_verifier_constructs_a_valid_transport(self):
+        from accounts.views import verify_google_token
+
+        with patch("google.oauth2.id_token.verify_oauth2_token", return_value={}) as verifier:
+            verify_google_token("test-token")
+        self.assertEqual(verifier.call_args.args[0], "test-token")
