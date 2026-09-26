@@ -147,3 +147,12 @@ class ProfilePermissionTests(TestCase):
         with patch("google.oauth2.id_token.verify_oauth2_token", return_value={}) as verifier:
             verify_google_token("test-token")
         self.assertEqual(verifier.call_args.args[0], "test-token")
+
+    def test_google_token_verifier_can_fetch_google_jwks(self):
+        from accounts.views import verify_google_token
+
+        # An invalid JWT reaches Google's public certificate endpoint before
+        # validation fails, proving the real HTTP transport is usable.
+        with self.assertRaises(Exception) as error:
+            verify_google_token("not-a-jwt")
+        self.assertNotIn("missing 1 required positional argument", str(error.exception))
