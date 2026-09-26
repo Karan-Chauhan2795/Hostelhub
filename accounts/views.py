@@ -126,6 +126,8 @@ class GoogleLoginView(View):
         if not settings.GOOGLE_OAUTH_CLIENT_ID or not settings.GOOGLE_OAUTH_CLIENT_SECRET or not settings.GOOGLE_OAUTH_REDIRECT_URI:
             messages.error(request, "Google sign-in is not configured yet.")
             return redirect("accounts:login")
+        if request.GET.get("signup") == "1":
+            request.session["google_oauth_signup"] = True
         state = secrets.token_urlsafe(32)
         nonce = secrets.token_urlsafe(32)
         request.session["google_oauth_state"] = state

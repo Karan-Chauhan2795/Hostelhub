@@ -147,7 +147,7 @@ class ProfilePermissionTests(TestCase):
         GOOGLE_OAUTH_REDIRECT_URI="http://testserver/accounts/google/callback/",
     )
     def test_google_signup_creates_only_a_verified_student_account(self):
-        response = self.client.get("/accounts/google/signup/")
+        response = self.client.get("/accounts/google/?signup=1")
         params = parse_qs(urlparse(response["Location"]).query)
         email = "new.google.student@example.com"
         with patch("accounts.views.exchange_google_code", return_value="token"), patch(
