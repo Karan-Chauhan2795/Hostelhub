@@ -59,3 +59,48 @@
 .filter-form{margin:0}.filter-select,.status-select{appearance:none;border:1px solid #bfdbfe;border-radius:10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%232563eb' stroke-linecap='round' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center;color:#1e3a8a;font-size:12px;font-weight:700;padding:10px 34px 10px 12px;box-shadow:0 3px 10px rgba(37,99,235,.06)}.filter-select:focus,.status-select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.14);outline:0}.status-select{min-width:132px;background-color:#eff6ff}.pagination a,.pagination span{display:grid;width:26px;height:26px;place-items:center;border-radius:7px;color:#64748b;font-size:12px;font-weight:700}.pagination .active{background:#eff6ff;color:#2563eb}.pagination .is-disabled{color:#cbd5e1}@media(max-width:680px){.filter-form .filter-actions{width:100%}.filter-select,.filter-form .filter-button{flex:1;min-width:0}.status-select{width:100%;min-width:0}}
 @media (max-width:680px){.nova-confirm{right:-2px;bottom:66px;width:min(390px,calc(100vw - 24px));height:min(520px,calc(100dvh - 94px))}}
 @media (max-height:500px){.nova-confirm{bottom:62px;height:calc(100dvh - 76px)}}
+
+/* Custom Logo Images */
+.brand-logo-wrap {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(37,99,235,.35);
+}
+.brand-logo-wrap .brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.brand-mark-img {
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+.brand-mark-img .brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.auth-logo-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 18px;
+}
+.auth-logo-img {
+  max-width: 220px;
+  max-height: 72px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}

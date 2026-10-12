@@ -53,17 +53,27 @@ def verify_google_token(token):
 
 class LoginView(View):
     template_name = "accounts/login.html"
+    remember_cookie_name = "remembered_identifier"
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect(self._redirect_url_for_role(request.user))
-        return render(request, self.template_name, {"form": LoginForm()})
+
+        initial_data = {}
+        remembered_identifier = request.get_signed_cookie(self.remember_cookie_name, default=None)
+        if remembered_identifier:
+            initial_data = {
+                "identifier": remembered_identifier,
+                "remember_me": True,
+            }
+        return render(request, self.template_name, {"form": LoginForm(initial=initial_data)})
 
     def post(self, request, *args, **kwargs):
         form = LoginForm(request.POST)
         if form.is_valid():
             identifier = form.cleaned_data["identifier"]
             password = form.cleaned_data["password"]
+            remember_me = form.cleaned_data["remember_me"]
             user = None
 
             if "@" in identifier:
@@ -87,12 +97,23 @@ class LoginView(View):
 
             if authenticated_user is not None:
                 login(request, authenticated_user)
-                request.session.set_expiry(settings.SESSION_COOKIE_AGE if form.cleaned_data["remember_me"] else 0)
+                request.session.set_expiry(settings.SESSION_COOKIE_AGE if remember_me else 0)
                 messages.success(
                     request,
                     f"Welcome back, {authenticated_user.get_full_name() or authenticated_user.username}!",
                 )
-                return redirect(self._redirect_url_for_role(authenticated_user))
+                response = redirect(self._redirect_url_for_role(authenticated_user))
+                if remember_me:
+                    response.set_signed_cookie(
+                        self.remember_cookie_name,
+                        identifier,
+                        max_age=settings.SESSION_COOKIE_AGE,
+                        httponly=True,
+                        samesite="Lax",
+                    )
+                else:
+                    response.delete_cookie(self.remember_cookie_name)
+                return response
 
             messages.error(request, "Invalid username/email or password.")
 

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Login | HostelHub{% endblock %}
 {% block content %}
 <div class="auth-page auth-page-compact">
     <div class="auth-card">
         <div class="auth-brand">
-            <div class="auth-logo">HH</div>
-            <p class="eyebrow">HostelHub</p>
+            <div class="auth-logo-wrap"><img src="{% static 'images/logo_full.png' %}" alt="HostelHub Logo" class="auth-logo-img"></div>
             <h1>Login</h1>
             <p>Access your hostel management dashboard securely.</p>
         </div>

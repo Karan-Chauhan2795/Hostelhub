@@ -146,6 +146,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const notificationsMenu = document.querySelector("[data-notifications-menu]");
+  const notificationsToggle = document.querySelector("[data-notifications-toggle]");
+  if (notificationsMenu && notificationsToggle) {
+    notificationsToggle.addEventListener("click", () => {
+      const isOpen = notificationsMenu.classList.toggle("is-open");
+      notificationsToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+    document.addEventListener("click", (event) => {
+      if (!notificationsMenu.contains(event.target)) {
+        notificationsMenu.classList.remove("is-open");
+        notificationsToggle.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
   document.querySelectorAll("[data-toggle-password]").forEach((button) => {
     const input = document.getElementById(button.dataset.togglePassword);
     if (!input) {

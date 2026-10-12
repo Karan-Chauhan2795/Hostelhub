@@ -1,7 +1,8 @@
+{% load static %}
 <header class="public-nav" data-public-nav>
   <div class="container nav-inner">
     <a class="public-brand" href="{% url 'dashboard:landing' %}" aria-label="HostelHub home">
-      <span class="brand-mark"><i data-lucide="building-2" aria-hidden="true"></i></span>
+      <span class="brand-mark brand-mark-img"><img src="{% static 'images/logo_mark.png' %}" alt="HostelHub Logo" class="brand-logo-img"></span>
       <span>HostelHub</span>
     </a>
     <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-nav-toggle><i data-lucide="menu"></i></button>

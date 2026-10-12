@@ -1,11 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Create Student Account | HostelHub{% endblock %}
 {% block content %}
 <div class="auth-page auth-page-wide">
     <div class="auth-card auth-card-wide">
         <div class="auth-brand">
-            <div class="auth-logo">HH</div>
-            <p class="eyebrow">HostelHub</p>
+            <div class="auth-logo-wrap"><img src="{% static 'images/logo_full.png' %}" alt="HostelHub Logo" class="auth-logo-img"></div>
             <h1>Create Student Account</h1>
             <p>Register as a student to access hostel services and updates.</p>
         </div>

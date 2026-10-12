@@ -22,11 +22,21 @@ class AuthenticationTests(TestCase):
         self.assertRedirects(response, "/dashboard/admin/", fetch_redirect_response=False)
         self.assertFalse(self.client.session.get_expire_at_browser_close())
         self.assertEqual(self.client.session.get_expiry_age(), settings.SESSION_COOKIE_AGE)
-        self.client.logout()
+        self.assertIn("remembered_identifier", response.cookies)
+
+        # In browser, logging out via the portal POST /accounts/logout/ preserves remember cookies
+        self.client.post("/accounts/logout/")
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+        # Check GET /accounts/login/ pre-fills the identifier from cookie
+        get_response = self.client.get("/accounts/login/")
+        self.assertContains(get_response, f'value="{self.admin.username}"')
+        self.assertContains(get_response, 'checked')
+
         response = self.client.post("/accounts/login/", {"identifier": self.student.username, "password": self.password})
         self.assertRedirects(response, "/student/", fetch_redirect_response=False)
         self.assertTrue(self.client.session.get_expire_at_browser_close())
-        self.assertTrue(self.client.session.get_expire_at_browser_close())
+        self.assertEqual(response.cookies["remembered_identifier"].value, "")
         self.client.post("/accounts/logout/")
         self.assertNotIn("_auth_user_id", self.client.session)
 

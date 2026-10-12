@@ -5,7 +5,40 @@
   </div>
   <nav class="top-actions">
     <button type="button" class="mobile-sidebar-toggle" data-sidebar-toggle aria-controls="app-sidebar" aria-expanded="false" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
-    <button type="button" class="top-icon" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span></span></button>
+    <div class="notifications-menu" data-notifications-menu>
+      <button type="button" class="top-icon" data-notifications-toggle aria-expanded="false" aria-label="Notifications ({{ navbar_notifications_count }})">
+        <i class="fa-regular fa-bell"></i>
+        {% if navbar_notifications_count > 0 %}
+          <span class="notification-badge">{{ navbar_notifications_count }}</span>
+        {% endif %}
+      </button>
+      <div class="notifications-dropdown" data-notifications-dropdown>
+        <div class="notifications-header">
+          <h3>Notifications</h3>
+          {% if navbar_notifications_count > 0 %}
+            <span class="count-pill">{{ navbar_notifications_count }} new</span>
+          {% endif %}
+        </div>
+        <ul class="notifications-list">
+          {% for notice in navbar_notifications %}
+            <li class="notification-item">
+              <a href="{% url 'notices:notice_detail' notice.pk %}" class="notification-link">
+                <span class="notification-icon-wrap"><i class="fa-regular fa-bell"></i></span>
+                <span class="notification-text">
+                  <strong class="notification-title">{{ notice.title }}</strong>
+                  <small class="notification-time">{{ notice.created_at|date:"d M Y, h:i A" }}</small>
+                </span>
+              </a>
+            </li>
+          {% empty %}
+            <li class="notifications-empty">No new notices at this time.</li>
+          {% endfor %}
+        </ul>
+        <div class="notifications-footer">
+          <a href="{% url 'notices:notice_list' %}">View all notices</a>
+        </div>
+      </div>
+    </div>
     <div class="role-badge"><i class="fa-solid fa-shield-halved"></i>{{ request.user.get_role_display }}</div>
     <div class="profile-menu" data-profile-menu>
       <button class="profile-trigger" type="button" data-profile-toggle aria-expanded="false">

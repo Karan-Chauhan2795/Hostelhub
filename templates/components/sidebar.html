@@ -1,7 +1,8 @@
+{% load static %}
 <aside id="app-sidebar" class="sidebar" data-sidebar>
   <div class="sidebar-top">
     <a class="brand" href="{% url 'dashboard:home' %}" aria-label="HostelHub dashboard">
-      <span>HH</span><strong>HostelHub</strong>
+      <span class="brand-logo-wrap"><img src="{% static 'images/logo_badge.png' %}" alt="HostelHub Logo" class="brand-logo-img"></span><strong>HostelHub</strong>
     </a>
     <button class="sidebar-collapse" type="button" data-sidebar-toggle aria-controls="app-sidebar" aria-expanded="true" aria-label="Collapse navigation"><i class="fa-solid fa-bars"></i></button>
   </div>
