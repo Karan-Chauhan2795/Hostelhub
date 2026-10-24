@@ -70,11 +70,11 @@ class StudentManagementAccessTests(TestCase):
         self.assertIsNone(student.room)
         self.assertFalse(student_user.is_active)
 
-        # Verify removed resident CANNOT login to the dashboard
+        # Verify removed resident CANNOT login to the dashboard and receives an informative error
         self.client.logout()
         failed_login = self.client.post("/accounts/login/", {"identifier": "deleted_student", "password": password})
         self.assertEqual(failed_login.status_code, 200)
-        self.assertContains(failed_login, "Invalid username/email or password.")
+        self.assertContains(failed_login, "Your hostel residency has been concluded or your account has been deactivated")
 
         # Verify admin list UI shows 'Vacated / Inactive' and only 'View' action for deleted student
         self.client.force_login(admin)

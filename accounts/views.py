@@ -82,12 +82,28 @@ class LoginView(View):
             identifier = form.cleaned_data["identifier"]
             password = form.cleaned_data["password"]
             remember_me = form.cleaned_data["remember_me"]
-            user = None
-
+            matching_users = []
             if "@" in identifier:
-                user = User.objects.filter(email__iexact=identifier).first()
+                matching_users = list(User.objects.filter(email__iexact=identifier))
             else:
-                user = User.objects.filter(username__iexact=identifier).first()
+                matching_users = list(User.objects.filter(username__iexact=identifier))
+
+            user = matching_users[0] if matching_users else None
+
+            # Check if user account was deactivated / removed by administrator
+            inactive_user = next((u for u in matching_users if not u.is_active), None)
+            if inactive_user is not None:
+                if inactive_user.role == User.Role.STUDENT:
+                    messages.error(
+                        request,
+                        "Your hostel residency has been concluded or your account has been deactivated by an administrator. Please contact the hostel office.",
+                    )
+                else:
+                    messages.error(
+                        request,
+                        "Your account has been deactivated or disabled by an administrator. Please contact administration.",
+                    )
+                return render(request, self.template_name, {"form": form})
 
             authenticated_user = None
             if user is not None:
@@ -219,7 +235,7 @@ class GoogleCallbackView(View):
         if claims.get("nonce") != nonce or not claims.get("email_verified") or not claims.get("email"):
             messages.error(request, "Google did not provide a verified email address.")
             return redirect("accounts:login")
-        users = User.objects.filter(email__iexact=claims["email"], is_active=True)
+        users = User.objects.filter(email__iexact=claims["email"])
         if users.count() == 0 and signup_requested:
             from students.models import Student
 
@@ -243,6 +259,19 @@ class GoogleCallbackView(View):
             messages.error(request, "No single HostelHub account matches this Google email. Contact an administrator.")
             return redirect("accounts:login")
         user = users.get()
+        if not user.is_active:
+            if user.role == User.Role.STUDENT:
+                messages.error(
+                    request,
+                    "Your hostel residency has been concluded or your account has been deactivated by an administrator. Please contact the hostel office.",
+                )
+            else:
+                messages.error(
+                    request,
+                    "Your account has been deactivated or disabled by an administrator. Please contact administration.",
+                )
+            return redirect("accounts:login")
+
         if user.role == User.Role.STUDENT:
             from students.models import Student
             student_profile = Student.objects.filter(user=user).select_related("room").first()

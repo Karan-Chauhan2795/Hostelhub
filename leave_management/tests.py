@@ -63,3 +63,22 @@ class LeaveManagementTests(TestCase):
         )
         self.assertRedirects(post_res, "/leave/")
         self.assertTrue(LeaveRequest.objects.filter(reason="Conference presentation in Delhi").exists())
+
+    def test_student_with_active_or_approved_leave_can_login_and_access_dashboard(self):
+        # Even if a student has an approved or pending leave active today, they can still log in and view their dashboard
+        self.leave.status = LeaveRequest.Status.APPROVED
+        self.leave.save()
+
+        # Login works normally
+        login_res = self.client.post(
+            "/accounts/login/",
+            {"identifier": self.student_user.username, "password": "wrong-password"},
+        )
+        self.assertEqual(login_res.status_code, 200)
+
+        # Login with correct password
+        self.client.force_login(self.student_user)
+        dash_res = self.client.get("/student/")
+        self.assertEqual(dash_res.status_code, 200)
+        self.assertContains(dash_res, "Student Portal")
+        self.assertContains(dash_res, "L-101")

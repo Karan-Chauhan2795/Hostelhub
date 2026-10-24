@@ -53,6 +53,17 @@ class AuthenticationTests(TestCase):
         self.assertNotIn("_auth_user_id", self.client.session)
         self.assertContains(response, "Your registration is pending administrator approval and room allocation")
 
+    def test_deactivated_or_deleted_student_cannot_login_and_gets_clear_message(self):
+        deleted_user = get_user_model().objects.create_user(
+            username="deleted_student", email="deleted@example.com", password=self.password, role="STUDENT", is_active=False
+        )
+        Student.objects.create(user=deleted_user, roll_number="DEL-001", course="Arts", room=None)
+        response = self.client.post("/accounts/login/", {"identifier": deleted_user.username, "password": self.password})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertContains(response, "Your hostel residency has been concluded or your account has been deactivated")
+        self.assertNotContains(response, "Your registration is pending administrator approval")
+
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_password_reset_emits_tokenized_link(self):
         response = self.client.post("/accounts/forgot-password/", {"email": self.student.email})
@@ -97,10 +108,15 @@ class AuthenticationTests(TestCase):
         self.assertEqual(str(self.client.session.get("_auth_user_id")), str(self.student.pk))
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
-    def test_password_reset_unregistered_email_does_not_reveal_existence(self):
+    def test_password_reset_unregistered_email_shows_error_and_sends_no_email(self):
         mail.outbox.clear()
         response = self.client.post("/accounts/forgot-password/", {"email": "nonexistent@example.com"})
-        self.assertRedirects(response, "/accounts/forgot-password/done/", fetch_redirect_response=False)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(
+            response.context["form"],
+            "email",
+            "No account found with this email address. Please check and try again.",
+        )
         # No email sent for unregistered email address
         self.assertEqual(len(mail.outbox), 0)
 
@@ -335,7 +351,7 @@ class WardenManagementFeatureTests(TestCase):
         self.warden.refresh_from_db()
         self.assertFalse(self.warden.is_active)
 
-        # 4. Attempt login with deleted warden credentials - must fail
+        # 4. Attempt login with deleted warden credentials - must fail with deactivated message
         self.client.logout()
         login_response = self.client.post(
             "/accounts/login/",
@@ -343,7 +359,7 @@ class WardenManagementFeatureTests(TestCase):
         )
         self.assertEqual(login_response.status_code, 200)
         self.assertNotIn("_auth_user_id", self.client.session)
-        self.assertContains(login_response, "Invalid username/email or password.")
+        self.assertContains(login_response, "Your account has been deactivated or disabled by an administrator.")
 
         # 5. Verify warden management list only displays View action for deactivated warden
         self.client.force_login(self.admin)

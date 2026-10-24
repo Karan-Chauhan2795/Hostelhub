@@ -1,35 +1,282 @@
 {% extends "base.html" %}
-{% block title %}HostelHub | Better student living{% endblock %}
+{% load static %}
+{% block title %}HostelHub | Campus Residence Portal{% endblock %}
 {% block body_class %}landing-page{% endblock %}
 {% block main_class %}landing-main{% endblock %}
 {% block content %}
 <section class="landing-hero" id="home">
   <div class="container hero-layout">
     <div class="hero-copy reveal">
-      <p class="hero-kicker"><span></span> Student living, thoughtfully managed</p>
-      <h1>Feel at home.<br><em>Achieve more.</em></h1>
-      <p class="hero-description">A premium, secure living experience designed around the way students study, connect and grow.</p>
-      <div class="hero-actions"><a href="#rooms" class="btn btn-primary btn-large">Explore rooms <i data-lucide="arrow-up-right"></i></a><a href="#facilities" class="btn btn-ghost btn-large">Discover HostelHub</a></div>
-      <div class="hero-proof"><div class="avatar-group"><span>AM</span><span>SK</span><span>RK</span><span>+</span></div><p><strong>500+ residents</strong><br>already feel at home here</p></div>
+      <p class="hero-kicker"><span></span> Official College Campus Residence</p>
+      <h1>On-Campus Living.<br><em>Built For Academics.</em></h1>
+      <p class="hero-description">The dedicated residential hostel of our institution. Secure, high-speed connected, and
+        just steps away from lecture halls, central labs, and the campus library.</p>
+      <div class="hero-actions">
+        <a href="#rooms" class="btn btn-primary btn-large">View Campus Hostels <i data-lucide="arrow-up-right"></i></a>
+        <a href="#facilities" class="btn btn-ghost btn-large">Campus Facilities</a>
+      </div>
+      <div class="hero-proof">
+        <div class="avatar-group">
+          <span>CS</span><span>EC</span><span>ME</span><span>IT</span>
+        </div>
+        <p><strong>Over 500+ enrolled scholars</strong><br>residing safely on campus</p>
+      </div>
     </div>
     <div class="hero-image-wrap reveal">
-      <img class="hero-image" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1500&q=90" alt="A bright, modern hostel lounge">
-      <div class="availability-card"><div class="availability-icon"><i data-lucide="calendar-check"></i></div><div><span>Now accepting</span><strong>2026–27 applications</strong></div><i class="availability-arrow" data-lucide="arrow-up-right"></i></div>
+      <img class="hero-image"
+        src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1500&q=90"
+        alt="Official College Hostel Campus Complex">
+      <div class="availability-card">
+        <div class="availability-icon"><i data-lucide="graduation-cap"></i></div>
+        <div><span>College Academic Year</span><strong>2026–2027 Admissions</strong></div>
+        <i class="availability-arrow" data-lucide="arrow-up-right"></i>
+      </div>
       <div class="hero-shape"></div>
     </div>
   </div>
-  <div class="container hero-meta"><span>Scroll to explore</span><i data-lucide="arrow-down"></i><span class="hero-meta-line"></span><span>Established 2014 · Pune, India</span></div>
+  <div class="container hero-meta">
+    <span>Institutional Campus Residence</span>
+    <i data-lucide="shield-check"></i>
+    <span class="hero-meta-line"></span>
+    <span>HostelHub · Integrated Student Portal</span>
+  </div>
 </section>
 
-<section class="trust-strip"><div class="container"><p>Everything you need for a <strong>better student life.</strong></p><div class="trust-items"><span><i data-lucide="shield-check"></i> 24/7 security</span><span><i data-lucide="wifi"></i> High-speed Wi-Fi</span><span><i data-lucide="heart-handshake"></i> Supportive community</span></div></div></section>
+<section class="trust-strip">
+  <div class="container">
+    <p>Official <strong>Campus Residential Infrastructure</strong></p>
+    <div class="trust-items">
+      <span><i data-lucide="shield-check"></i> 24/7 Campus Security & Wardens</span>
+      <span><i data-lucide="wifi"></i> 1 Gbps Campus LAN & Wi-Fi</span>
+      <span><i data-lucide="utensils"></i> Hygienic Mess & Dining</span>
+      <span><i data-lucide="book-open"></i> 2-Minute Walk to Classrooms</span>
+    </div>
+  </div>
+</section>
 
-<section class="section rooms-section" id="rooms"><div class="container"><div class="section-heading"><div><p class="eyebrow">Spaces made for you</p><h2>Find your <em>perfect fit.</em></h2></div><a href="{% url 'accounts:signup' %}" class="text-link arrow-link">View all rooms <i data-lucide="arrow-right"></i></a></div><div class="room-grid">{% for room in rooms %}<article class="room-card"><div class="room-image"><img src="{{ room.image }}" alt="{{ room.name }} room"><span>Available</span><button type="button" aria-label="Save {{ room.name }}"><i data-lucide="heart"></i></button></div><div class="room-details"><div><h3>{{ room.name }}</h3><p>{{ room.features }}</p></div><div class="room-price"><strong>{{ room.price }}</strong><span>/ month</span></div></div><a href="{% url 'accounts:signup' %}" class="room-link">View room <i data-lucide="arrow-up-right"></i></a></article>{% endfor %}</div></div></section>
+<!-- College Hostels Overview -->
+<section class="section rooms-section" id="rooms">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">College Residence Blocks</p>
+        <h2>Student <em>Accommodations.</em></h2>
+      </div>
+      <a href="{% url 'accounts:signup' %}" class="text-link arrow-link">Register for room allotment <i
+          data-lucide="arrow-right"></i></a>
+    </div>
 
-<section class="section feature-section" id="facilities"><div class="container feature-layout"><div class="feature-visual"><img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=85" alt="Students working together in a bright study space"><div class="image-caption"><i data-lucide="sparkles"></i><span>Designed for<br><strong>your best days</strong></span></div></div><div class="feature-copy"><p class="eyebrow">More than a place to stay</p><h2>Everything you need to <em>thrive.</em></h2><p>HostelHub brings together comfort, convenience, and community — so you can focus on making the most of university life.</p><div class="facility-list"><div><i data-lucide="book-open-check"></i><span><strong>Focused study spaces</strong><small>Quiet zones, group rooms and 24/7 access</small></span></div><div><i data-lucide="utensils"></i><span><strong>Wholesome everyday dining</strong><small>Fresh menus made for student schedules</small></span></div><div><i data-lucide="dumbbell"></i><span><strong>Wellbeing built in</strong><small>Fitness, recreation and community events</small></span></div></div><a href="#gallery" class="btn btn-secondary">Explore facilities <i data-lucide="arrow-right"></i></a></div></div></section>
+    <div class="room-grid">
+      <article class="room-card">
+        <div class="room-image">
+          <img src="https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=900&q=85"
+            alt="Single Study Room">
+          <span>Senior / Scholar</span>
+        </div>
+        <div class="room-details">
+          <div>
+            <h3>Block A · Single Study Room</h3>
+            <p>Dedicated ergonomic desk, high-speed LAN, private balcony & wardrobe</p>
+          </div>
+          <div class="room-price">
+            <strong>Campus Allotted</strong>
+            <span>Per Semester</span>
+          </div>
+        </div>
+        <a href="{% url 'accounts:signup' %}" class="room-link">Allotment Details <i
+            data-lucide="arrow-up-right"></i></a>
+      </article>
 
-<section class="gallery-section" id="gallery"><div class="container"><div class="section-heading"><div><p class="eyebrow">A glimpse of life here</p><h2>Made for <em>memories.</em></h2></div><p class="section-intro">Spaces that make everyday campus life feel a little more extraordinary.</p></div><div class="gallery-grid"><img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=900&q=85" alt="Warmly lit hostel cafe"><img src="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=900&q=85" alt="Students at a campus gathering"><img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=85" alt="Students enjoying time together"></div></div></section>
+      <article class="room-card">
+        <div class="room-image">
+          <img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=900&q=85"
+            alt="Double Sharing Room">
+          <span>Standard Allotment</span>
+        </div>
+        <div class="room-details">
+          <div>
+            <h3>Block B · Dual Sharing Suite</h3>
+            <p>Twin study desks, separate storage lockers, cross-ventilation, attached washroom</p>
+          </div>
+          <div class="room-price">
+            <strong>Campus Allotted</strong>
+            <span>Per Semester</span>
+          </div>
+        </div>
+        <a href="{% url 'accounts:signup' %}" class="room-link">Allotment Details <i
+            data-lucide="arrow-up-right"></i></a>
+      </article>
 
-<section class="quote-section" id="about"><div class="container quote-content"><i data-lucide="quote"></i><blockquote>“HostelHub gave me more than a room. It gave me the space, support and friends to make university unforgettable.”</blockquote><div><span class="quote-avatar">NP</span><span><strong>Nisha Patel</strong><small>Resident since 2023</small></span></div></div></section>
+      <article class="room-card">
+        <div class="room-image">
+          <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=85"
+            alt="Triple Sharing Room">
+          <span>Junior Allotment</span>
+        </div>
+        <div class="room-details">
+          <div>
+            <h3>Block C · Triple Resident Room</h3>
+            <p>Spacious room with 3 individual study stations, high-speed Wi-Fi, air cooling</p>
+          </div>
+          <div class="room-price">
+            <strong>Campus Allotted</strong>
+            <span>Per Semester</span>
+          </div>
+        </div>
+        <a href="{% url 'accounts:signup' %}" class="room-link">Allotment Details <i
+            data-lucide="arrow-up-right"></i></a>
+      </article>
+    </div>
+  </div>
+</section>
 
-<section class="cta-section"><div class="container cta-panel"><div><p class="eyebrow">Your next chapter starts here</p><h2>Ready to find your <em>place?</em></h2><p>Applications for the upcoming academic year are now open.</p></div><a href="{% url 'accounts:signup' %}" class="btn btn-light btn-large">Create Student Account <i data-lucide="arrow-up-right"></i></a></div></section>
+<!-- College Specific Amenities & Workflow -->
+<section class="section feature-section" id="facilities">
+  <div class="container feature-layout">
+    <div class="feature-visual">
+      <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=85"
+        alt="College students studying in campus hostel common lounge">
+      <div class="image-caption">
+        <i data-lucide="graduation-cap"></i>
+        <span>Academic Atmosphere<br><strong>Zero Commute to Class</strong></span>
+      </div>
+    </div>
+    <div class="feature-copy">
+      <p class="eyebrow">On-Campus Advantages</p>
+      <h2>Managed exclusively for <em>College Students.</em></h2>
+      <p>Unlike commercial PG apartments, HostelHub operates under strict college administration and residential faculty
+        oversight. Everything is streamlined to protect your studies and maintain campus discipline.</p>
+      <div class="facility-list">
+        <div>
+          <i data-lucide="calendar-clock"></i>
+          <span>
+            <strong>Digital Leave & Gate Passes</strong>
+            <small>Submit institutional leave requests approved directly by designated hostel wardens.</small>
+          </span>
+        </div>
+        <div>
+          <i data-lucide="wrench"></i>
+          <span>
+            <strong>Prompt In-House Maintenance</strong>
+            <small>Raise electrical, plumbing, or internet tickets resolved swiftly by campus engineers.</small>
+          </span>
+        </div>
+        <div>
+          <i data-lucide="shield-alert"></i>
+          <span>
+            <strong>Biometric Security & Regulated Curfew</strong>
+            <small>Controlled campus perimeter entry with verified visitor management and warden rounds.</small>
+          </span>
+        </div>
+        <div>
+          <i data-lucide="coffee"></i>
+          <span>
+            <strong>Nutritious Student Mess Committee</strong>
+            <small>Four balanced meals daily supervised by student representatives and college nutritionists.</small>
+          </span>
+        </div>
+      </div>
+      <a href="{% url 'accounts:signup' %}" class="btn btn-secondary">Apply for Hostel Admission <i
+          data-lucide="arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- How College Hostel Allotment Works -->
+<section class="section" style="background: #ffffff;" id="process">
+  <div class="container">
+    <div class="section-heading" style="text-align: center; display: block; margin-bottom: 45px;">
+      <p class="eyebrow">Standard College Admission Process</p>
+      <h2>How Campus Hostel <em>Allotment Works.</em></h2>
+      <p style="color: var(--muted); max-width: 600px; margin: 10px auto 0;">Complete, transparent residential workflow
+        from admission registration to room key handoff.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;">
+      <div class="card" style="text-align: center; border-radius: 20px; padding: 32px 24px;">
+        <div
+          style="width: 50px; height: 50px; border-radius: 14px; background: #eff6ff; color: var(--primary); display: grid; place-items: center; margin: 0 auto 18px; font-size: 20px;">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px;">1. Online Registration</h3>
+        <p style="color: var(--muted); font-size: 13px; margin: 0;">Register your student account with your verified
+          college roll number and credentials.</p>
+      </div>
+
+      <div class="card" style="text-align: center; border-radius: 20px; padding: 32px 24px;">
+        <div
+          style="width: 50px; height: 50px; border-radius: 14px; background: #fef3c7; color: #b45309; display: grid; place-items: center; margin: 0 auto 18px; font-size: 20px;">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px;">2. Admin Verification</h3>
+        <p style="color: var(--muted); font-size: 13px; margin: 0;">Hostel administration verifies your college
+          enrollment and approves your application.</p>
+      </div>
+
+      <div class="card" style="text-align: center; border-radius: 20px; padding: 32px 24px;">
+        <div
+          style="width: 50px; height: 50px; border-radius: 14px; background: #ecfdf5; color: #047857; display: grid; place-items: center; margin: 0 auto 18px; font-size: 20px;">
+          <i class="fa-solid fa-door-open"></i>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px;">3. Room Allotment</h3>
+        <p style="color: var(--muted); font-size: 13px; margin: 0;">A designated room and bed number in Block A, B, or C
+          is assigned to your profile.</p>
+      </div>
+
+      <div class="card" style="text-align: center; border-radius: 20px; padding: 32px 24px;">
+        <div
+          style="width: 50px; height: 50px; border-radius: 14px; background: #f5f3ff; color: #7c3aed; display: grid; place-items: center; margin: 0 auto 18px; font-size: 20px;">
+          <i class="fa-solid fa-laptop-code"></i>
+        </div>
+        <h3 style="font-size: 17px; margin-bottom: 8px;">4. Full Portal Access</h3>
+        <p style="color: var(--muted); font-size: 13px; margin: 0;">Log in to access digital notices, leave
+          applications, mess feedback, and Nova AI support.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="gallery-section" id="gallery">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Inside The Campus Residence</p>
+        <h2>Campus <em>Life & Spaces.</em></h2>
+      </div>
+      <p class="section-intro">Purpose-built zones designed to foster study groups, healthy living, and lifelong college
+        camaraderie.</p>
+    </div>
+    <div class="gallery-grid">
+      <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=900&q=85"
+        alt="College Campus Library & Study Zone">
+      <img src="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=900&q=85"
+        alt="College Hostel Courtyard">
+      <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=85"
+        alt="Students in group discussion in common room">
+    </div>
+  </div>
+</section>
+
+<section class="quote-section" id="about">
+  <div class="container quote-content">
+    <i data-lucide="quote"></i>
+    <blockquote>“Living in the college hostel keeps me right in the center of academic life. Zero travel fatigue,
+      reliable internet, and a disciplined study environment helped me achieve my semester goals.”</blockquote>
+    <div>
+      <span class="quote-avatar">KC</span>
+      <span><strong>Karan Chauhan</strong><small>Final Year IMCA Resident · Block A</small></span>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container cta-panel">
+    <div>
+      <p class="eyebrow">College Residential Enrollment</p>
+      <h2>Secure your <em>hostel seat today.</em></h2>
+      <p>Enrollment is open for all newly enrolled and returning college students.</p>
+    </div>
+    <a href="{% url 'accounts:signup' %}" class="btn btn-light btn-large">Create Student Account <i
+        data-lucide="arrow-up-right"></i></a>
+  </div>
+</section>
 {% endblock %}

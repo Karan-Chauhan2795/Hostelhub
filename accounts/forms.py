@@ -147,6 +147,16 @@ class HostelHubPasswordResetForm(PasswordResetForm):
         ),
     )
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email:
+            email = email.strip()
+            if not User._default_manager.filter(email__iexact=email).exists():
+                raise forms.ValidationError("No account found with this email address. Please check and try again.")
+            if not User._default_manager.filter(email__iexact=email, is_active=True).exists():
+                raise forms.ValidationError("This account has been deactivated. Please contact the hostel office.")
+        return email
+
     def get_users(self, email):
         """Allow active users with matching email to reset or create their password, even if registered via Google OAuth."""
         active_users = User._default_manager.filter(email__iexact=email, is_active=True)

@@ -120,10 +120,18 @@ class StudentDashboardView(RoleRequiredMixin, TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and request.user.role == "STUDENT":
+            from django.contrib import messages
+            from django.contrib.auth import logout
+            if not request.user.is_active:
+                logout(request)
+                messages.error(
+                    request,
+                    "Your hostel residency has been concluded or your account has been deactivated by an administrator. Please contact the hostel office.",
+                )
+                return redirect("accounts:login")
+
             student = Student.objects.filter(user=request.user).select_related("room").first()
             if not student or not student.room:
-                from django.contrib import messages
-                from django.contrib.auth import logout
                 logout(request)
                 messages.warning(
                     request,

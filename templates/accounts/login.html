@@ -3,6 +3,11 @@
 {% block title %}Login | HostelHub{% endblock %}
 {% block content %}
 <div class="auth-page auth-page-compact">
+    <div class="auth-top-nav">
+        <a href="{% url 'dashboard:landing' %}" class="auth-back-home">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+        </a>
+    </div>
     <div class="auth-card">
         <div class="auth-brand">
             <div class="auth-logo-wrap"><img src="{% static 'images/logo_full.png' %}" alt="HostelHub Logo" class="auth-logo-img"></div>
