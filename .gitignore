@@ -1,5 +1,46 @@
+# Database
 db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Logs
 *.log
-.env
+*.pot
+
+# Django static / media
+staticfiles/
+media/
+
+# IDE & OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test & coverage artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/

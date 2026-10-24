@@ -1,1 +1,122 @@
-{% extends "base.html" %}{% block title %}Complaint Management | HostelHub{% endblock %}{% block content %}<section class="management-header"><div><p class="eyebrow">Resident support</p><h2>Complaint management</h2></div>{% if request.user.role == "STUDENT" %}<a class="btn btn-primary" href="{% url 'complaints:complaint_create' %}">New complaint</a>{% endif %}</section><section class="card table-card"><form method="get" class="table-toolbar filter-form"><div class="search-control"><i class="fa-solid fa-magnifying-glass"></i><input class="search-box" type="search" name="q" value="{{ request.GET.q }}" placeholder="Search complaints"></div><div class="filter-actions"><select class="filter-select" name="status" onchange="this.form.submit()"><option value="">All statuses</option>{% for value,label in view.model.Status.choices %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="filter-button">Filter</button></div></form><div class="table-scroll"><table class="data-table"><thead><tr><th>ID</th><th>Student</th><th>Issue</th><th>Status</th></tr></thead><tbody>{% for complaint in object_list %}<tr><td>#{{ complaint.id }}</td><td>{{ complaint.student }}</td><td>{{ complaint.subject }}</td><td>{% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}<form method="post" action="{% url 'complaints:complaint_status' complaint.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><select class="status-select" name="status" onchange="this.form.submit()">{% for value,label in complaint.Status.choices %}<option value="{{ value }}" {% if complaint.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></form>{% else %}<span class="status-pill">{{ complaint.get_status_display }}</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="4">No matching complaints.</td></tr>{% endfor %}</tbody></table></div><div class="table-footer"><span>Showing {{ page_obj.paginator.count }} requests</span>{% include "components/pagination.html" %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Complaint Management | HostelHub{% endblock %}
+
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow">Complaints</p>
+    <h2>Complaint management</h2>
+    <p>Track, review, and resolve resident complaints and maintenance requests.</p>
+  </div>
+  {% if request.user.role == "STUDENT" %}
+    <a class="btn btn-primary" href="{% url 'complaints:complaint_create' %}">
+      <i class="fa-solid fa-plus"></i> New complaint
+    </a>
+  {% endif %}
+</section>
+
+<section class="card table-card">
+  <form method="get" class="table-toolbar filter-form">
+    <div class="search-control">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input class="search-box" type="search" name="q" value="{{ request.GET.q }}" placeholder="Search complaints by subject, description, or student">
+    </div>
+    <div class="filter-actions">
+      <select class="filter-select" name="status" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value,label in view.model.Status.choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="filter-button">Filter</button>
+    </div>
+  </form>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 70px;">ID</th>
+          <th>Student</th>
+          <th>Issue & Description</th>
+          <th style="width: 170px;">Status</th>
+          <th style="width: 130px;">Reported On</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for complaint in object_list %}
+        <tr>
+          <td>
+            <strong style="color: var(--primary); font-weight: 700;">#{{ complaint.student_sequence_number }}</strong>
+          </td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <strong>{{ complaint.student }}</strong>
+              {% if complaint.student.room %}
+                <small style="color: #059669; font-size: 11px;">
+                  <i class="fa-solid fa-door-open"></i> Room: {{ complaint.student.room.number }}
+                </small>
+              {% else %}
+                <small style="color: #d97706; font-size: 11px;">No Room Allocated</small>
+              {% endif %}
+              <small style="color: var(--muted); font-size: 10px;">Roll: {{ complaint.student.roll_number }}</small>
+            </div>
+          </td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <strong style="color: var(--foreground); font-size: 13.5px;">{{ complaint.subject }}</strong>
+              {% if complaint.description %}
+                <div style="padding: 6px 10px; background: #f8fafc; border-left: 3px solid #cbd5e1; border-radius: 4px; margin-top: 2px;">
+                  <span style="font-size: 12px; color: #334155; line-height: 1.4; display: block; white-space: pre-line;">{{ complaint.description }}</span>
+                </div>
+              {% else %}
+                <span style="color: var(--muted); font-style: italic; font-size: 11px;">No description provided</span>
+              {% endif %}
+            </div>
+          </td>
+          <td style="vertical-align: middle;">
+            {% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}
+              <form method="post" action="{% url 'complaints:complaint_status' complaint.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <select class="status-select" name="status" onchange="this.form.submit()">
+                  {% for value,label in complaint.Status.choices %}
+                    <option value="{{ value }}" {% if complaint.status == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            {% else %}
+              {% if complaint.status == "RESOLVED" %}
+                <span class="complaint-status-badge complaint-status-resolved">
+                  <i class="fa-solid fa-circle-check"></i> Resolved
+                </span>
+              {% elif complaint.status == "IN_PROGRESS" %}
+                <span class="complaint-status-badge complaint-status-progress">
+                  <i class="fa-solid fa-arrows-rotate"></i> In Progress
+                </span>
+              {% else %}
+                <span class="complaint-status-badge complaint-status-pending">
+                  <i class="fa-solid fa-clock"></i> Pending
+                </span>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-size: 12px; color: var(--muted);">{{ complaint.created_at|date:"d M Y" }}</span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 24px; color: var(--muted);">No matching complaints found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer">
+    <span>Showing {{ page_obj.paginator.count }} requests</span>
+    {% include "components/pagination.html" %}
+  </div>
+</section>
+{% endblock %}

@@ -17,7 +17,20 @@ class ComplaintManagementView(RoleRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        complaints = Complaint.objects.select_related("student__user")
+        from django.db.models import F, Window
+        from django.db.models.functions import RowNumber
+
+        complaints = (
+            Complaint.objects.select_related("student__user", "student__room")
+            .annotate(
+                student_seq=Window(
+                    expression=RowNumber(),
+                    partition_by=[F("student_id")],
+                    order_by=F("created_at").asc(),
+                )
+            )
+            .order_by("-created_at")
+        )
         if self.request.user.role == "STUDENT":
             complaints = complaints.filter(student__user=self.request.user)
         status = self.request.GET.get("status")
@@ -25,7 +38,12 @@ class ComplaintManagementView(RoleRequiredMixin, ListView):
             complaints = complaints.filter(status=status)
         query = self.request.GET.get("q", "").strip()
         if query:
-            complaints = complaints.filter(Q(subject__icontains=query) | Q(description__icontains=query) | Q(student__user__first_name__icontains=query) | Q(student__user__last_name__icontains=query))
+            complaints = complaints.filter(
+                Q(subject__icontains=query)
+                | Q(description__icontains=query)
+                | Q(student__user__first_name__icontains=query)
+                | Q(student__user__last_name__icontains=query)
+            )
         return complaints
 
 

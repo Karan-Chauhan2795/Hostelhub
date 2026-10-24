@@ -25,7 +25,13 @@ class BookingListView(RoleRequiredMixin, ListView):
             queryset = queryset.filter(status=status)
         query = self.request.GET.get("q", "").strip()
         if query:
-            queryset = queryset.filter(Q(room__number__icontains=query) | Q(student__user__first_name__icontains=query) | Q(student__user__last_name__icontains=query) | Q(student__roll_number__icontains=query))
+            queryset = queryset.filter(
+                Q(room__number__icontains=query)
+                | Q(student__user__first_name__icontains=query)
+                | Q(student__user__last_name__icontains=query)
+                | Q(student__roll_number__icontains=query)
+                | Q(notes__icontains=query)
+            )
         return queryset
 
 
@@ -53,7 +59,7 @@ class BookingHistoryView(BookingListView):
 
 
 class BookingStatusUpdateView(RoleRequiredMixin, UpdateView):
-    """Staff review a request and allocate the requested room on confirmation."""
+    """Staff review a request and allocate the requested room on confirmation or record rejection reason."""
 
     model = Booking
     form_class = BookingStatusForm
@@ -62,16 +68,26 @@ class BookingStatusUpdateView(RoleRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         booking = form.instance
+        rejection_reason = form.cleaned_data.get("rejection_reason", "").strip()
+
+        if booking.status == Booking.Status.CANCELLED and rejection_reason:
+            existing_student_msg = booking.request_message
+            if existing_student_msg:
+                booking.notes = f"{existing_student_msg}\n[Rejection Reason]: {rejection_reason}"
+            else:
+                booking.notes = f"[Rejection Reason]: {rejection_reason}"
+
         if booking.status == Booking.Status.CONFIRMED:
             room = booking.room
             if booking.student.room_id not in (None, room.id):
-                messages.error(self.request, "This resident already has a different room allocation.")
-                return redirect(self.get_success_url())
+                # Note: If student is requesting to shift to a new room, room shifting is allowed
+                pass
             if booking.student.room_id != room.id and room.occupied_count >= room.capacity:
                 messages.error(self.request, "This room is already at capacity.")
                 return redirect(self.get_success_url())
             booking.student.room = room
             booking.student.save(update_fields=["room"])
+
         messages.success(self.request, "Booking status updated.")
         return super().form_valid(form)
 

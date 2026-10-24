@@ -19,3 +19,17 @@ class DashboardDataTests(TestCase):
         response = self.client.get("/dashboard/admin/")
         self.assertContains(response, "DASH-101")
         self.assertContains(response, "Total Residents")
+
+    def test_unallocated_student_cannot_access_student_dashboard(self):
+        password = secrets.token_urlsafe(16)
+        user_model = get_user_model()
+        student_user = user_model.objects.create_user(
+            username="unallocated_student", password=password, role=user_model.Role.STUDENT
+        )
+        Student.objects.create(user=student_user, roll_number="UNALLOC-001", course="Test", room=None)
+        
+        self.client.force_login(student_user)
+        response = self.client.get("/student/")
+        self.assertRedirects(response, "/accounts/login/")
+        # Ensure session was logged out
+        self.assertNotIn("_auth_user_id", self.client.session)

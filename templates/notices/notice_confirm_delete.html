@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Delete Notice | HostelHub{% endblock %}
+{% block content %}
+<div style="margin-bottom: 14px;">
+  <a href="{% url 'notices:notice_list' %}" class="text-link" style="font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Notices
+  </a>
+</div>
+<section class="card delete-modal-card" style="max-width: 580px; padding: 32px; border-radius: 18px; border: 1px solid #fee2e2; background: #ffffff; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05); position: relative;">
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+    <div style="width: 40px; height: 40px; border-radius: 10px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+      <i class="fa-regular fa-trash-can"></i>
+    </div>
+    <div>
+      <span class="status-pill" style="background: #fee2e2; color: #991b1b; font-weight: 600; font-size: 11px;">Danger Action</span>
+      <h2 style="color: #0f172a; margin: 4px 0 0 0; font-size: 22px;">Delete Notice?</h2>
+    </div>
+  </div>
+
+  <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 16px 0 24px 0;">
+    Are you sure you want to permanently delete <strong style="color: #0f172a;">"{% if '[Warden Only] ' in object.title %}{{ object.title|slice:'15:' }}{% else %}{{ object.title }}{% endif %}"</strong>? This action will remove the notice for all viewers and cannot be undone.
+  </p>
+
+  <form method="post" class="data-form">
+    {% csrf_token %}
+    <div style="display: flex; gap: 10px; justify-content: flex-start; align-items: center;">
+      <a class="btn btn-secondary" href="{% url 'notices:notice_list' %}" style="padding: 10px 18px; border-radius: 8px;">Cancel</a>
+      <button class="btn btn-danger" type="submit" style="background: #dc2626; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+        <i class="fa-regular fa-trash-can"></i> Yes, Delete Notice
+      </button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+

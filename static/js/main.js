@@ -149,10 +149,63 @@ document.addEventListener("DOMContentLoaded", () => {
   const notificationsMenu = document.querySelector("[data-notifications-menu]");
   const notificationsToggle = document.querySelector("[data-notifications-toggle]");
   if (notificationsMenu && notificationsToggle) {
+    const badge = notificationsMenu.querySelector(".notification-badge");
+    const countPill = notificationsMenu.querySelector(".count-pill");
+    const userId = notificationsMenu.dataset.userId || "anon";
+    const rawIds = (notificationsMenu.dataset.noticeIds || "").trim();
+    const noticeIds = rawIds ? rawIds.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !isNaN(n)) : [];
+    const latestId = parseInt(notificationsMenu.dataset.latestId || "0", 10);
+
+    // User-specific seen records
+    const storageKey = `hostelhub_user_${userId}_last_seen_notice_id`;
+    const lastSeenId = parseInt(localStorage.getItem(storageKey) || "0", 10);
+
+    // Calculate how many notices in the list have pk > lastSeenId
+    const unreadCount = noticeIds.filter((id) => id > lastSeenId).length;
+
+    const updateBadgeUI = (count) => {
+      if (count > 0) {
+        if (badge) {
+          badge.textContent = String(count);
+          badge.style.display = "";
+        }
+        if (countPill) {
+          countPill.textContent = `${count} new`;
+          countPill.style.display = "";
+        }
+      } else {
+        if (badge) {
+          badge.style.display = "none";
+        }
+        if (countPill) {
+          countPill.style.display = "none";
+        }
+      }
+    };
+
+    const markNoticesAsSeen = () => {
+      if (latestId > 0) {
+        localStorage.setItem(storageKey, String(latestId));
+      }
+      updateBadgeUI(0);
+    };
+
+    // If currently on notice list or detail page, mark as seen for this user
+    const isNoticePage = window.location.pathname.startsWith("/notices/");
+    if (isNoticePage) {
+      markNoticesAsSeen();
+    } else {
+      updateBadgeUI(unreadCount);
+    }
+
     notificationsToggle.addEventListener("click", () => {
       const isOpen = notificationsMenu.classList.toggle("is-open");
       notificationsToggle.setAttribute("aria-expanded", String(isOpen));
+      if (isOpen) {
+        markNoticesAsSeen();
+      }
     });
+
     document.addEventListener("click", (event) => {
       if (!notificationsMenu.contains(event.target)) {
         notificationsMenu.classList.remove("is-open");
@@ -228,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const renderHistory = () => {
       messages.replaceChildren();
-      if (!history.length) renderMessage("assistant", "Hi! I’m Nova. Ask me about HostelHub rooms, bookings, leave, notices or support.");
+      if (!history.length) renderMessage("assistant", "Hi! I’m Nova. Ask me about HostelHub rooms, bookings, leave, notices or complaints.");
       history.forEach(({ role, text }) => renderMessage(role === "model" ? "assistant" : role, text));
     };
     const saveHistory = () => window.localStorage.setItem(storageKey, JSON.stringify(history.slice(-30)));
@@ -299,6 +352,88 @@ document.addEventListener("DOMContentLoaded", () => {
         sendButton.disabled = false;
         input.focus();
       }
+    });
+  }
+
+  // Warden checklist interaction and daily state persistence
+  const checklistCard = document.querySelector("[data-warden-checklist]");
+  if (checklistCard) {
+    const checklistDate = checklistCard.dataset.checklistDate || new Date().toISOString().split("T")[0];
+    const storageKey = `hostelhub_warden_checklist_${checklistDate}`;
+    const items = checklistCard.querySelectorAll(".checklist-interactive li[data-check-id]");
+    const countBadge = checklistCard.querySelector("[data-checklist-count]");
+
+    const updateChecklistUI = (checkedSet) => {
+      let doneCount = 0;
+      items.forEach((item) => {
+        const id = item.dataset.checkId;
+        const isDone = checkedSet.has(id);
+        if (isDone) {
+          doneCount++;
+          item.classList.add("done");
+          const icon = item.querySelector("i");
+          if (icon) {
+            icon.className = "fa-solid fa-check";
+          }
+        } else {
+          item.classList.remove("done");
+          const icon = item.querySelector("i");
+          if (icon) {
+            icon.className = "";
+          }
+        }
+      });
+      if (countBadge) {
+        countBadge.textContent = `${doneCount} / ${items.length}`;
+      }
+    };
+
+    let savedChecked;
+    try {
+      const stored = window.localStorage.getItem(storageKey);
+      if (stored !== null) {
+        savedChecked = new Set(JSON.parse(stored));
+      }
+    } catch {
+      savedChecked = null;
+    }
+
+    if (!savedChecked) {
+      // Initialize from default HTML markup
+      savedChecked = new Set();
+      items.forEach((item) => {
+        if (item.classList.contains("done")) {
+          savedChecked.add(item.dataset.checkId);
+        }
+      });
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(Array.from(savedChecked)));
+      } catch {}
+    }
+
+    updateChecklistUI(savedChecked);
+
+    items.forEach((item) => {
+      const toggleCheck = () => {
+        const id = item.dataset.checkId;
+        if (savedChecked.has(id)) {
+          savedChecked.delete(id);
+        } else {
+          savedChecked.add(id);
+        }
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(Array.from(savedChecked)));
+        } catch {}
+        updateChecklistUI(savedChecked);
+      };
+
+      item.addEventListener("click", toggleCheck);
+      item.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggleCheck();
+        }
+      });
     });
   }
 });

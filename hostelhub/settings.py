@@ -6,10 +6,16 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = "django-insecure-hostelhub-skeleton"
-DEBUG = True
-# ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
-ALLOWED_HOSTS = ["*"]
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-hostelhub-dev-key")
+DEBUG = os.getenv("DEBUG", "True").strip().lower() in ("true", "1", "yes")
+
+_allowed_hosts_env = os.getenv("ALLOWED_HOSTS", "")
+if _allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(",") if h.strip()]
+elif DEBUG:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
+else:
+    ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -90,7 +96,20 @@ AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "/accounts/login/"
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SECURE = not DEBUG
+
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SECURE = not DEBUG
 EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").strip().lower() in ("true", "1", "yes")
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").strip().lower() in ("true", "1", "yes")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "HostelHub <no-reply@hostelhub.local>")
 GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
 GOOGLE_OAUTH_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")

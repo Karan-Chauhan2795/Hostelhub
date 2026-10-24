@@ -1,1 +1,122 @@
-{% extends "base.html" %}{% block title %}Leave Requests | HostelHub{% endblock %}{% block content %}<section class="management-header"><div><p class="eyebrow">Leave management</p><h2>Leave requests</h2></div>{% if request.user.role == "STUDENT" %}<a class="btn btn-primary" href="{% url 'leave_management:leave_apply' %}">Apply for leave</a>{% endif %}</section><section class="card table-card"><form method="get" class="table-toolbar filter-form"><div></div><div class="filter-actions"><select class="filter-select" name="status" onchange="this.form.submit()"><option value="">All statuses</option>{% for value,label in view.model.Status.choices %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="filter-button">Filter</button></div></form><div class="table-scroll"><table class="data-table"><thead><tr><th>Student</th><th>From</th><th>To</th><th>Status</th></tr></thead><tbody>{% for leave in object_list %}<tr><td>{{ leave.student }}</td><td>{{ leave.start_date|date:"d M Y" }}</td><td>{{ leave.end_date|date:"d M Y" }}</td><td>{% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}<form method="post" action="{% url 'leave_management:leave_status' leave.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><select class="status-select" name="status" onchange="this.form.submit()">{% for value,label in leave.Status.choices %}<option value="{{ value }}" {% if leave.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></form>{% else %}<a class="status-pill" href="{% url 'leave_management:leave_detail' leave.pk %}">{{ leave.get_status_display }}</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="4">No matching leave requests.</td></tr>{% endfor %}</tbody></table></div><div class="table-footer"><span>Showing {{ page_obj.paginator.count }} requests</span>{% include "components/pagination.html" %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Leave Requests | HostelHub{% endblock %}
+
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow">Leave management</p>
+    <h2>Leave requests</h2>
+    <p>Monitor resident departure and return dates, review reason details, and manage approval status.</p>
+  </div>
+  {% if request.user.role == "STUDENT" %}
+    <a class="btn btn-primary" href="{% url 'leave_management:leave_apply' %}">
+      <i class="fa-solid fa-plane-departure"></i> Apply for leave
+    </a>
+  {% endif %}
+</section>
+
+<section class="card table-card">
+  <form method="get" class="table-toolbar filter-form">
+    <div class="search-control">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input class="search-box" type="search" name="q" value="{{ request.GET.q }}" placeholder="Search by student, room, roll no, or reason">
+    </div>
+    <div class="filter-actions">
+      <select class="filter-select" name="status" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value,label in view.model.Status.choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="filter-button">Filter</button>
+    </div>
+  </form>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th style="min-width: 140px;">Leave Period</th>
+          <th>Reason & Details</th>
+          <th style="width: 160px;">Status</th>
+          <th style="width: 120px;">Requested On</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for leave in object_list %}
+        <tr>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <strong>{{ leave.student }}</strong>
+              {% if leave.student.room %}
+                <small style="color: #059669; font-size: 11px;">
+                  <i class="fa-solid fa-door-open"></i> Room: {{ leave.student.room.number }}
+                </small>
+              {% else %}
+                <small style="color: #d97706; font-size: 11px;">No Room Allocated</small>
+              {% endif %}
+              <small style="color: var(--muted); font-size: 10px;">Roll: {{ leave.student.roll_number }}</small>
+            </div>
+          </td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 3px; font-size: 12px;">
+              <span><i class="fa-solid fa-arrow-right-from-bracket" style="color: #ef4444; font-size: 10px; width: 14px;"></i><strong>From:</strong> {{ leave.start_date|date:"d M Y" }}</span>
+              <span><i class="fa-solid fa-arrow-right-to-bracket" style="color: #10b981; font-size: 10px; width: 14px;"></i><strong>To:</strong> {{ leave.end_date|date:"d M Y" }}</span>
+            </div>
+          </td>
+          <td>
+            {% if leave.reason %}
+              <div style="padding: 6px 10px; background: #f8fafc; border-left: 3px solid #cbd5e1; border-radius: 4px;">
+                <span style="font-size: 12px; color: #334155; line-height: 1.4; display: block; white-space: pre-line;">{{ leave.reason }}</span>
+              </div>
+            {% else %}
+              <span style="color: var(--muted); font-style: italic; font-size: 11px;">No reason provided</span>
+            {% endif %}
+          </td>
+          <td style="vertical-align: middle;">
+            {% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}
+              <form method="post" action="{% url 'leave_management:leave_status' leave.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <select class="status-select" name="status" onchange="this.form.submit()">
+                  {% for value,label in leave.Status.choices %}
+                    <option value="{{ value }}" {% if leave.status == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            {% else %}
+              {% if leave.status == "APPROVED" %}
+                <span class="complaint-status-badge complaint-status-resolved">
+                  <i class="fa-solid fa-circle-check"></i> Approved
+                </span>
+              {% elif leave.status == "REJECTED" %}
+                <span class="status-pill" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 11.5px; font-weight: 600; border-radius: 999px;">
+                  <i class="fa-solid fa-circle-xmark"></i> Rejected
+                </span>
+              {% else %}
+                <span class="complaint-status-badge complaint-status-pending">
+                  <i class="fa-solid fa-clock"></i> Pending
+                </span>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-size: 12px; color: var(--muted);">{{ leave.created_at|date:"d M Y" }}</span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 24px; color: var(--muted);">No matching leave requests found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer">
+    <span>Showing {{ page_obj.paginator.count }} requests</span>
+    {% include "components/pagination.html" %}
+  </div>
+</section>
+{% endblock %}

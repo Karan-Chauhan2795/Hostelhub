@@ -1,3 +1,65 @@
 {% extends "base.html" %}
-{% block title %}{{ object.title }} | HostelHub{% endblock %}
-{% block content %}<article class="page-card"><p class="eyebrow">Published {{ object.created_at|date:"d M Y" }}</p><h1>{{ object.title }}</h1><p>{{ object.body|linebreaksbr }}</p></article>{% endblock %}
+{% block title %}{{ object.clean_display_title }} | HostelHub{% endblock %}
+{% block content %}
+<div style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+  <a href="{% url 'notices:notice_list' %}" class="text-link" style="font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Notices
+  </a>
+  {% if request.user.role == "ADMIN" or object.created_by == request.user %}
+    <div class="action-buttons">
+      <a class="action-btn action-btn-edit" href="{% url 'notices:notice_edit' object.pk %}">
+        <i class="fa-regular fa-pen-to-square"></i> Edit notice
+      </a>
+      <a class="action-btn action-btn-delete" href="{% url 'notices:notice_delete' object.pk %}">
+        <i class="fa-regular fa-trash-can"></i> Delete notice
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+<article class="page-card notice-detail-card" style="position: relative; overflow: visible;">
+  <style>
+    /* Prevent the circular decorative pseudo-element from covering action buttons or text */
+    .notice-detail-card:after { display: none !important; }
+  </style>
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <p class="eyebrow" style="margin: 0; font-size: 12px; letter-spacing: 0.04em; color: #64748b; display: inline-flex; align-items: center; gap: 6px;">
+        <i class="fa-regular fa-clock" style="font-size: 11px;"></i>
+        Published {{ object.created_at|date:"d M Y, h:i A" }}
+      </p>
+
+      {% if object.created_by.role == "ADMIN" %}
+        <span class="status-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-size: 12px; font-weight: 600; line-height: 1;">
+          <i class="fa-solid fa-shield-halved" style="font-size: 11px;"></i>
+          <span>Admin &middot; {{ object.created_by.get_full_name|default:object.created_by.username }}</span>
+        </span>
+      {% elif object.created_by.role == "WARDEN" %}
+        <span class="status-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 12px; font-weight: 600; line-height: 1;">
+          <i class="fa-solid fa-user-shield" style="font-size: 11px;"></i>
+          <span>Warden &middot; {{ object.created_by.get_full_name|default:object.created_by.username }}</span>
+        </span>
+      {% elif object.created_by %}
+        <span class="status-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 12px; font-weight: 600; line-height: 1;">
+          <i class="fa-regular fa-user" style="font-size: 11px;"></i>
+          <span>{{ object.created_by.get_full_name|default:object.created_by.username }}</span>
+        </span>
+      {% endif %}
+    </div>
+
+    {% if object.is_warden_only %}
+      <span class="status-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 12px; font-weight: 600; line-height: 1;">
+        <i class="fa-solid fa-lock" style="font-size: 10px;"></i>
+        <span>Warden Only Notice</span>
+      </span>
+    {% endif %}
+  </div>
+
+
+  <h1 style="color: #0f172a; margin-top: 4px;">{{ object.clean_display_title }}</h1>
+  <p style="white-space: pre-wrap; font-size: 15px; line-height: 1.6; color: #334155;">{{ object.body }}</p>
+</article>
+
+
+{% endblock %}
+

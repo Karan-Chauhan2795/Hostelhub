@@ -22,6 +22,9 @@ def redirect_to_role_dashboard(user):
         return redirect("dashboard:admin_dashboard")
     if user.role == "WARDEN":
         return redirect("dashboard:warden_dashboard")
+    student = Student.objects.filter(user=user).select_related("room").first()
+    if not student or not student.room:
+        return redirect("accounts:login")
     return redirect("dashboard:student_dashboard")
 
 
@@ -107,12 +110,27 @@ class WardenDashboardView(RoleRequiredMixin, TemplateView):
         ]
         context["alerts"] = Notice.objects.select_related("created_by")[:3]
         context["active_visitors"] = Visitor.objects.filter(check_out__isnull=True).count()
+        context["today"] = timezone.localdate()
         return context
 
 
 class StudentDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/student_dashboard.html"
     allowed_roles = ("STUDENT",)
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.role == "STUDENT":
+            student = Student.objects.filter(user=request.user).select_related("room").first()
+            if not student or not student.room:
+                from django.contrib import messages
+                from django.contrib.auth import logout
+                logout(request)
+                messages.warning(
+                    request,
+                    "Your registration is pending administrator approval and room allocation. You will be able to access your dashboard once approved and assigned a room.",
+                )
+                return redirect("accounts:login")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -124,11 +142,29 @@ class StudentDashboardView(RoleRequiredMixin, TemplateView):
             {"title": "Leave Requests", "value": student.leave_requests.filter(status=LeaveRequest.Status.PENDING).count() if student else 0, "change": "Pending"},
             {"title": "Bookings", "value": student.bookings.exclude(status=Booking.Status.CANCELLED).count() if student else 0, "change": "Active requests"},
         ]
-        context["announcements"] = Notice.objects.all()[:3]
+        context["announcements"] = Notice.objects.exclude(
+            title__startswith="[Warden Only]"
+        ).exclude(body__startswith="[Warden Only]").select_related("created_by")[:3]
         context["recent_bookings"] = student.bookings.select_related("room")[:3] if student else []
         context["recent_leaves"] = student.leave_requests.all()[:3] if student else []
         context["recent_complaints"] = student.complaints.all()[:3] if student else []
-        context["today"] = timezone.localdate()
+        
+        today = timezone.localdate()
+        context["today"] = today
+        start_of_week = today - timedelta(days=today.weekday())
+        week_days = []
+        for i in range(7):
+            day_date = start_of_week + timedelta(days=i)
+            week_days.append({
+                "label": ["M", "T", "W", "T", "F", "S", "S"][i],
+                "day_number": day_date.day,
+                "date": day_date,
+                "is_today": day_date == today,
+            })
+        context["calendar_week_days"] = week_days
+        context["calendar_month_year"] = today.strftime("%B %Y")
+        context["calendar_current_month"] = today.strftime("%B")
+        
         profile_values = [
             self.request.user.first_name, self.request.user.last_name,
             self.request.user.email, self.request.user.phone_number,

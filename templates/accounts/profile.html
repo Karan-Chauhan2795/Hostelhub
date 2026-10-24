@@ -1,7 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Profile | HostelHub{% endblock %}
 {% block content %}
-<section class="profile-hero card"><div class="profile-cover"></div><div class="profile-hero-body"><div class="profile-avatar">{{ profile_data.full_name|slice:":1" }}<span><i class="fa-solid fa-check"></i></span></div><div class="profile-identity"><p class="eyebrow">{{ profile_data.role }} profile</p><h2>{{ profile_data.full_name }}</h2><p>{{ profile_data.email }} <span>·</span> Resident at HostelHub</p></div><a class="btn btn-secondary profile-edit" href="{% url 'accounts:profile_edit' %}"><i class="fa-regular fa-pen-to-square"></i>Edit profile</a></div></section>
+{% if managed_profile %}
+<div style="margin-bottom: 14px;">
+  {% if target_user.role == "WARDEN" %}
+    <a href="{% url 'accounts:warden_management' %}" class="text-link" style="font-size: 13px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-arrow-left"></i> Back to Warden Management</a>
+  {% else %}
+    <a href="{% url 'students:student_management' %}" class="text-link" style="font-size: 13px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-arrow-left"></i> Back to Student Management</a>
+  {% endif %}
+</div>
+{% endif %}
+<section class="profile-hero card">
+  <div class="profile-cover"></div>
+  <div class="profile-hero-body">
+    <div class="profile-avatar">{{ profile_data.full_name|slice:":1" }}<span><i class="fa-solid fa-check"></i></span></div>
+    <div class="profile-identity">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 2px;">
+        <p class="eyebrow" style="margin: 0; line-height: 1.2;">{% if managed_profile %}{{ profile_data.role }} Details{% else %}{{ profile_data.role }} profile{% endif %}</p>
+        {% if managed_profile and not target_user.is_active %}
+          <span class="status-pill" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; line-height: 1.4;">
+            <i class="fa-solid fa-circle-xmark" style="font-size: 11px;"></i> {% if target_user.role == "STUDENT" %}Leaved / Deleted{% else %}Deleted / Inactive{% endif %}
+          </span>
+        {% endif %}
+      </div>
+      <h2>{{ profile_data.full_name }}</h2>
+      <p>{{ profile_data.email }} <span>·</span> Resident at HostelHub</p>
+    </div>
+    {% if managed_profile %}
+      {% if request.user.role == "ADMIN" and target_user.is_active %}
+        <a class="btn btn-secondary profile-edit" href="{% url 'accounts:managed_profile_edit' target_user.pk %}"><i class="fa-regular fa-pen-to-square"></i>Edit profile</a>
+      {% endif %}
+    {% else %}
+      {% if request.user.role == "ADMIN" %}
+        <a class="btn btn-secondary profile-edit" href="{% url 'accounts:profile_edit' %}"><i class="fa-regular fa-pen-to-square"></i>Edit profile</a>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
 {% if request.user.role == "ADMIN" %}
 <section class="profile-overview"><article class="card completion-card"><div class="card-heading"><div><p class="eyebrow">Profile completion</p><h3>Keep your information up to date</h3></div></div><p>Updated details help HostelHub support your stay.</p></article><article class="card mini-info-card"><i class="fa-solid fa-door-open"></i><span><small>Current room</small><strong>{{ profile_data.room }}</strong></span></article><article class="card mini-info-card"><i class="fa-solid fa-shield-heart"></i><span><small>Emergency contact</small><strong>{{ profile_data.guardian }}</strong></span></article></section>
 {% endif %}

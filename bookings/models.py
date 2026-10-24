@@ -18,3 +18,25 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"Booking #{self.pk}"
+
+    @property
+    def request_message(self):
+        """Returns the message/notes submitted by the student when requesting the room."""
+        if not self.notes:
+            return ""
+        if "\n[Rejection Reason]:" in self.notes:
+            return self.notes.split("\n[Rejection Reason]:", 1)[0].replace("[Student Note]:", "").strip()
+        if self.notes.startswith("[Rejection Reason]:"):
+            return ""
+        return self.notes.replace("[Student Note]:", "").strip()
+
+    @property
+    def rejection_reason(self):
+        """Returns the rejection/cancellation reason given by admin or warden, if any."""
+        if not self.notes:
+            return ""
+        if "\n[Rejection Reason]:" in self.notes:
+            return self.notes.split("\n[Rejection Reason]:", 1)[1].strip()
+        if self.notes.startswith("[Rejection Reason]:"):
+            return self.notes.replace("[Rejection Reason]:", "", 1).strip()
+        return ""

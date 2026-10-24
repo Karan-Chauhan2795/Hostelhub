@@ -11,9 +11,17 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.text import slugify
 from django.contrib.auth.views import PasswordResetCompleteView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
-from django.views.generic import FormView, TemplateView, UpdateView, View
+from django.views.generic import CreateView, DeleteView, FormView, TemplateView, UpdateView, View
 
-from .forms import AdminPasswordResetForm, LoginForm, ProfileForm, StudentSignupForm
+from .forms import (
+    AdminPasswordResetForm,
+    HostelHubPasswordResetForm,
+    HostelHubSetPasswordForm,
+    LoginForm,
+    ProfileForm,
+    StudentSignupForm,
+    WardenCreationForm,
+)
 from .mixins import RoleRequiredMixin
 
 User = get_user_model()
@@ -96,6 +104,16 @@ class LoginView(View):
                 )
 
             if authenticated_user is not None:
+                if authenticated_user.role == User.Role.STUDENT:
+                    from students.models import Student
+                    student_profile = Student.objects.filter(user=authenticated_user).select_related("room").first()
+                    if not student_profile or not student_profile.room:
+                        messages.warning(
+                            request,
+                            "Your registration is pending administrator approval and room allocation. You will be able to access your dashboard once approved and assigned a room.",
+                        )
+                        return render(request, self.template_name, {"form": form})
+
                 login(request, authenticated_user)
                 request.session.set_expiry(settings.SESSION_COOKIE_AGE if remember_me else 0)
                 messages.success(
@@ -215,14 +233,26 @@ class GoogleCallbackView(View):
             )
             user.set_unusable_password()
             user.save(update_fields=["password"])
-            Student.objects.create(user=user, roll_number=f"STU-{user.pk:06d}", course="Not provided")
-            login(request, user)
-            messages.success(request, "Your Student account has been created with Google.")
-            return redirect("dashboard:student_dashboard")
+            Student.objects.create(user=user, roll_number=f"STU-{user.pk:06d}", course="Not provided", room=None)
+            messages.success(
+                request,
+                "Your Student account has been created with Google. Your registration is pending administrator approval and room allocation before you can access the dashboard.",
+            )
+            return redirect("accounts:login")
         if users.count() != 1:
             messages.error(request, "No single HostelHub account matches this Google email. Contact an administrator.")
             return redirect("accounts:login")
         user = users.get()
+        if user.role == User.Role.STUDENT:
+            from students.models import Student
+            student_profile = Student.objects.filter(user=user).select_related("room").first()
+            if not student_profile or not student_profile.room:
+                messages.warning(
+                    request,
+                    "Your registration is pending administrator approval and room allocation. You will be able to access your dashboard once approved and assigned a room.",
+                )
+                return redirect("accounts:login")
+
         login(request, user)
         messages.success(request, f"Welcome back, {user.get_full_name() or user.username}!")
         return redirect(LoginView()._redirect_url_for_role(user))
@@ -245,13 +275,17 @@ class StudentSignupView(View):
                 user=user,
                 defaults={"roll_number": f"STU-{user.pk:06d}", "course": "Not provided"},
             )
-            messages.success(request, "Student account created successfully. Please login.")
+            messages.success(
+                request,
+                "Student account registered successfully. Your registration has been submitted to the administrator for approval and room allocation before you can log in.",
+            )
             return redirect("accounts:login")
         return render(request, self.template_name, {"form": form})
 
 
 class ForgotPasswordView(PasswordResetView):
     template_name = "accounts/forgot_password.html"
+    form_class = HostelHubPasswordResetForm
     email_template_name = "accounts/password_reset_email.txt"
     subject_template_name = "accounts/password_reset_subject.txt"
     success_url = reverse_lazy("accounts:password_reset_done")
@@ -263,6 +297,7 @@ class ForgotPasswordDoneView(PasswordResetDoneView):
 
 class ResetPasswordConfirmView(PasswordResetConfirmView):
     template_name = "accounts/password_reset_confirm.html"
+    form_class = HostelHubSetPasswordForm
     success_url = reverse_lazy("accounts:password_reset_complete")
 
 
@@ -298,13 +333,18 @@ class ProfileUpdateView(RoleRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["cancel_url"] = reverse_lazy("accounts:profile")
+        return context
+
     def form_valid(self, form):
         messages.success(self.request, "Profile updated.")
         return super().form_valid(form)
 
 
 class ManagedProfileView(ProfileView):
-    allowed_roles = (User.Role.ADMIN,)
+    allowed_roles = (User.Role.ADMIN, User.Role.WARDEN)
 
     def get_context_data(self, **kwargs):
         context = super(ProfileView, self).get_context_data(**kwargs)
@@ -321,6 +361,7 @@ class ManagedProfileView(ProfileView):
             "guardian": student.emergency_contact if student and student.emergency_contact else "Not provided",
         }
         context["managed_profile"] = True
+        context["target_user"] = profile_user
         return context
 
 
@@ -331,6 +372,21 @@ class ManagedProfileUpdateView(RoleRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return get_object_or_404(User, pk=self.kwargs["pk"], role__in=(User.Role.STUDENT, User.Role.WARDEN))
+
+    def dispatch(self, request, *args, **kwargs):
+        target = self.get_object()
+        if not target.is_active:
+            messages.error(request, "Cannot edit a deactivated or archived account.")
+            return redirect("accounts:managed_profile", pk=target.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        target = self.get_object()
+        context["target_user"] = target
+        context["managed_profile"] = True
+        context["cancel_url"] = reverse_lazy("accounts:managed_profile", kwargs={"pk": target.pk})
+        return context
 
     def get_success_url(self):
         return reverse_lazy("accounts:managed_profile", kwargs={"pk": self.object.pk})
@@ -354,6 +410,13 @@ class ManagedPasswordResetView(RoleRequiredMixin, FormView):
             role__in=(User.Role.STUDENT, User.Role.WARDEN),
         )
 
+    def dispatch(self, request, *args, **kwargs):
+        target = self.get_target_user()
+        if not target.is_active:
+            messages.error(request, "Cannot reset password for a deactivated or archived account.")
+            return redirect("accounts:managed_profile", pk=target.pk)
+        return super().dispatch(request, *args, **kwargs)
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.get_target_user()
@@ -371,5 +434,39 @@ class WardenManagementView(RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["wardens"] = User.objects.filter(role=User.Role.WARDEN).order_by("username")
+        context["wardens"] = User.objects.filter(role=User.Role.WARDEN).order_by("-is_active", "username")
         return context
+
+
+class WardenCreateView(RoleRequiredMixin, CreateView):
+    form_class = WardenCreationForm
+    template_name = "accounts/warden_create.html"
+    success_url = reverse_lazy("accounts:warden_management")
+    allowed_roles = (User.Role.ADMIN,)
+
+    def form_valid(self, form):
+        user = form.save()
+        messages.success(self.request, f"Warden account '{user.get_full_name() or user.username}' created successfully.")
+        return redirect(self.success_url)
+
+
+class WardenDeleteView(RoleRequiredMixin, DeleteView):
+    model = User
+    template_name = "accounts/warden_confirm_delete.html"
+    success_url = reverse_lazy("accounts:warden_management")
+    allowed_roles = (User.Role.ADMIN,)
+
+    def get_queryset(self):
+        return User.objects.filter(role=User.Role.WARDEN)
+
+    def form_valid(self, form):
+        warden = self.get_object()
+        warden_name = warden.get_full_name() or warden.username
+        # Deactivate account so login is revoked, but history (notices created, etc.) remains intact in DB
+        warden.is_active = False
+        warden.save(update_fields=["is_active"])
+        messages.success(
+            self.request,
+            f"Warden '{warden_name}' has been deactivated. Dashboard login access has been revoked.",
+        )
+        return redirect(self.success_url)

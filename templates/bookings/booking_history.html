@@ -1,3 +1,64 @@
 {% extends "base.html" %}
 {% block title %}Booking History | HostelHub{% endblock %}
-{% block content %}<section class="card table-card"><div class="card-heading"><div><p class="eyebrow">Room requests</p><h2>Booking history</h2></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Room</th><th>Status</th><th>Requested</th></tr></thead><tbody>{% for booking in object_list %}<tr><td>{{ booking.room }}</td><td>{{ booking.get_status_display }}</td><td>{{ booking.requested_at|date:"d M Y" }}</td></tr>{% empty %}<tr><td colspan="3">No booking history yet.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% block content %}
+<section class="card table-card">
+  <div class="card-heading" style="padding: 20px 24px 0;">
+    <div>
+      <p class="eyebrow">Room requests</p>
+      <h2>Booking history</h2>
+    </div>
+  </div>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Target Room</th>
+          <th>Request Message / Shift Reason</th>
+          <th>Status</th>
+          <th>Requested Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in object_list %}
+        <tr>
+          <td>
+            <span class="room-number"><strong>{{ booking.room.number }}</strong></span>
+            <small style="color:var(--muted); display:block; font-size:10px;">{{ booking.room.get_room_type_display }}</small>
+          </td>
+          <td style="max-width:320px;">
+            {% if booking.request_message %}
+              <div style="font-size:12px; color:#334155; line-height:1.35;">{{ booking.request_message }}</div>
+            {% else %}
+              <span style="color:var(--muted); font-style:italic; font-size:11px;">No message</span>
+            {% endif %}
+
+            {% if booking.status == "CANCELLED" and booking.rejection_reason %}
+              <div style="margin-top:6px; padding:6px 10px; background:#fef2f2; border-left:3px solid #ef4444; border-radius:4px;">
+                <strong style="color:#b91c1c; font-size:10.5px; display:block;">
+                  <i class="fa-solid fa-circle-exclamation"></i> Rejection Reason:
+                </strong>
+                <span style="color:#991b1b; font-size:11.5px;">{{ booking.rejection_reason }}</span>
+              </div>
+            {% endif %}
+          </td>
+          <td>
+            {% if booking.status == "CONFIRMED" %}
+              <span class="status-pill" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">Confirmed</span>
+            {% elif booking.status == "CANCELLED" %}
+              <span class="status-pill" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca;">Cancelled / Rejected</span>
+            {% else %}
+              <span class="status-pill" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">Pending Review</span>
+            {% endif %}
+          </td>
+          <td>{{ booking.requested_at|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No booking history yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

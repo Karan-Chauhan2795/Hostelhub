@@ -16,10 +16,39 @@
             <a href="{% url 'students:student_management' %}" class="text-link">View all</a>
         </div>
         <div class="table-scroll"><table class="data-table">
-            <thead><tr><th>Name</th><th>Room</th><th>Status</th></tr></thead>
+            <thead><tr><th>Name</th><th>Room</th><th>Status</th><th>Action</th></tr></thead>
             <tbody>
                 {% for student in students %}
-                <tr><td>{{ student.user.get_full_name|default:student.user.username }}</td><td>{{ student.room|default:"Unassigned" }}</td><td><span class="status-pill">Active</span></td></tr>
+                <tr>
+                    <td>{{ student.user.get_full_name|default:student.user.username }}</td>
+                    <td>
+                        {% if student.room %}
+                            {{ student.room.number }}
+                        {% else %}
+                            <span class="soft-pill" style="background:#fef3c7; color:#92400e;">Unallocated</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not student.user.is_active %}
+                            <span class="status-pill" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;">Left / Archived</span>
+                        {% elif student.room %}
+                            <span class="status-pill">Active</span>
+                        {% else %}
+                            <span class="status-pill" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">Pending Room</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if student.user.is_active %}
+                                <a class="action-btn action-btn-delete" href="{% url 'students:student_delete' student.pk %}" title="Delete student">
+                                    <i class="fa-regular fa-trash-can"></i> Delete
+                                </a>
+                            {% else %}
+                                <span style="color: var(--muted); font-size: 11px;">Archived</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table></div>

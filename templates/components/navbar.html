@@ -5,31 +5,47 @@
   </div>
   <nav class="top-actions">
     <button type="button" class="mobile-sidebar-toggle" data-sidebar-toggle aria-controls="app-sidebar" aria-expanded="false" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
-    <div class="notifications-menu" data-notifications-menu>
-      <button type="button" class="top-icon" data-notifications-toggle aria-expanded="false" aria-label="Notifications ({{ navbar_notifications_count }})">
+    <div class="notifications-menu" data-notifications-menu data-user-id="{{ request.user.pk|default:0 }}" data-latest-id="{{ navbar_latest_notice_id|default:0 }}" data-notice-ids="{% for n in navbar_notifications %}{{ n.pk }}{% if not forloop.last %},{% endif %}{% endfor %}">
+      <button type="button" class="top-icon" data-notifications-toggle aria-expanded="false" aria-label="Notifications">
         <i class="fa-regular fa-bell"></i>
-        {% if navbar_notifications_count > 0 %}
-          <span class="notification-badge">{{ navbar_notifications_count }}</span>
-        {% endif %}
+        <span class="notification-badge" style="display: none;"></span>
       </button>
+
       <div class="notifications-dropdown" data-notifications-dropdown>
         <div class="notifications-header">
           <h3>Notifications</h3>
-          {% if navbar_notifications_count > 0 %}
-            <span class="count-pill">{{ navbar_notifications_count }} new</span>
-          {% endif %}
+          <span class="count-pill" style="display: none;"></span>
         </div>
         <ul class="notifications-list">
           {% for notice in navbar_notifications %}
-            <li class="notification-item">
+            <li class="notification-item" data-notice-id="{{ notice.pk }}">
               <a href="{% url 'notices:notice_detail' notice.pk %}" class="notification-link">
+
                 <span class="notification-icon-wrap"><i class="fa-regular fa-bell"></i></span>
                 <span class="notification-text">
-                  <strong class="notification-title">{{ notice.title }}</strong>
-                  <small class="notification-time">{{ notice.created_at|date:"d M Y, h:i A" }}</small>
+                  <strong class="notification-title">
+                    {{ notice.clean_display_title }}
+                    {% if notice.is_warden_only %}
+                      <span style="font-size: 9px; font-weight: normal; background: #fef3c7; color: #92400e; padding: 2px 5px; border-radius: 4px;">Warden Only</span>
+                    {% endif %}
+                  </strong>
+
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                    {% if notice.created_by.role == "ADMIN" %}
+                      <span style="font-size: 9px; font-weight: 600; background: #eef2ff; color: #4338ca; padding: 1px 5px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
+                        <i class="fa-solid fa-shield-halved" style="font-size: 8px;"></i> Admin
+                      </span>
+                    {% elif notice.created_by.role == "WARDEN" %}
+                      <span style="font-size: 9px; font-weight: 600; background: #ecfdf5; color: #047857; padding: 1px 5px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
+                        <i class="fa-solid fa-user-shield" style="font-size: 8px;"></i> Warden
+                      </span>
+                    {% endif %}
+                    <small class="notification-time">{{ notice.created_at|date:"d M Y, h:i A" }}</small>
+                  </div>
                 </span>
               </a>
             </li>
+
           {% empty %}
             <li class="notifications-empty">No new notices at this time.</li>
           {% endfor %}

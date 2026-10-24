@@ -10,5 +10,19 @@ class Notice(models.Model):
     class Meta:
         ordering = ("-created_at",)
 
+    @property
+    def is_warden_only(self):
+        return self.title.startswith("[Warden Only] ") or self.title == "[Warden Only]"
+
+    @property
+    def clean_display_title(self):
+        prefix = "[Warden Only] "
+        if self.title.startswith(prefix):
+            return self.title[len(prefix):]
+        if self.title == "[Warden Only]":
+            return ""
+        return self.title
+
     def __str__(self):
         return self.title
+

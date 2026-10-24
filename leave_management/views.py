@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
@@ -16,12 +17,22 @@ class LeaveListView(RoleRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = LeaveRequest.objects.select_related("student__user")
+        queryset = LeaveRequest.objects.select_related("student__user", "student__room").order_by("-created_at")
         if self.request.user.role == "STUDENT":
             queryset = queryset.filter(student__user=self.request.user)
         status = self.request.GET.get("status")
         if status in LeaveRequest.Status.values:
             queryset = queryset.filter(status=status)
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            queryset = queryset.filter(
+                Q(reason__icontains=query)
+                | Q(student__user__first_name__icontains=query)
+                | Q(student__user__last_name__icontains=query)
+                | Q(student__user__username__icontains=query)
+                | Q(student__roll_number__icontains=query)
+                | Q(student__room__number__icontains=query)
+            )
         return queryset
 
 
@@ -50,7 +61,7 @@ class LeaveDetailView(RoleRequiredMixin, DetailView):
     allowed_roles = ("ADMIN", "WARDEN", "STUDENT")
 
     def get_queryset(self):
-        queryset = LeaveRequest.objects.select_related("student__user")
+        queryset = LeaveRequest.objects.select_related("student__user", "student__room")
         return queryset.filter(student__user=self.request.user) if self.request.user.role == "STUDENT" else queryset
 
 

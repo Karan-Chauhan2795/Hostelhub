@@ -14,7 +14,7 @@ HOSTEL_TERMS = (
     "resident", "visitor", "facility", "mess", "curfew", "timing", "rules",
     "policy", "allocation", "accommodation", "fee",
 )
-OFF_TOPIC_REPLY = "I’m Nova, HostelHub’s assistant. I can help with hostel rooms, bookings, leave, notices, support and hostel policies."
+OFF_TOPIC_REPLY = "I’m Nova, HostelHub’s assistant. I can help with hostel rooms, bookings, complaints, leave, notices, and hostel policies."
 UNAVAILABLE_REPLY = "Nova is temporarily unavailable. Please try again shortly."
 
 

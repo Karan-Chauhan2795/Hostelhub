@@ -1,1 +1,154 @@
-{% extends "base.html" %}{% block title %}Bookings | HostelHub{% endblock %}{% block content %}<section class="management-header"><div><p class="eyebrow">Room requests</p><h2>Bookings</h2></div>{% if request.user.role == "STUDENT" %}<a class="btn btn-primary" href="{% url 'bookings:booking_create' %}">Request booking</a>{% endif %}</section><section class="card table-card"><form method="get" class="table-toolbar filter-form"><div class="search-control"><i class="fa-solid fa-magnifying-glass"></i><input class="search-box" type="search" name="q" value="{{ request.GET.q }}" placeholder="Search bookings"></div><div class="filter-actions"><select class="filter-select" name="status" onchange="this.form.submit()"><option value="">All statuses</option>{% for value,label in view.model.Status.choices %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="filter-button">Filter</button></div></form><div class="table-scroll"><table class="data-table"><thead><tr><th>Student</th><th>Room</th><th>Status</th><th>Requested</th></tr></thead><tbody>{% for booking in object_list %}<tr><td>{{ booking.student }}</td><td>{{ booking.room }}</td><td>{% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}<form method="post" action="{% url 'bookings:booking_status' booking.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><select class="status-select" name="status" onchange="this.form.submit()">{% for value,label in booking.Status.choices %}<option value="{{ value }}" {% if booking.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></form>{% else %}<span class="status-pill">{{ booking.get_status_display }}</span>{% endif %}</td><td>{{ booking.requested_at|date:"d M Y" }}</td></tr>{% empty %}<tr><td colspan="4">No matching bookings.</td></tr>{% endfor %}</tbody></table></div><div class="table-footer"><span>Showing {{ page_obj.paginator.count }} requests</span>{% include "components/pagination.html" %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Bookings | HostelHub{% endblock %}
+
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow">Room allocation & shifts</p>
+    <h2>Bookings</h2>
+    <p>Manage and track room requests and room shift applications.</p>
+  </div>
+  {% if request.user.role == "STUDENT" %}
+    <a class="btn btn-primary" href="{% url 'bookings:booking_create' %}">
+      <i class="fa-solid fa-bed"></i> Request booking
+    </a>
+  {% endif %}
+</section>
+
+<section class="card table-card">
+  <form method="get" class="table-toolbar filter-form">
+    <div class="search-control">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input class="search-box" type="search" name="q" value="{{ request.GET.q }}" placeholder="Search by student, room, roll no, or note">
+    </div>
+    <div class="filter-actions">
+      <select class="filter-select" name="status" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value,label in view.model.Status.choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="filter-button">Filter</button>
+    </div>
+  </form>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Requested Room</th>
+          <th>Request Message / Shift Reason</th>
+          <th>Status</th>
+          <th>Requested Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in object_list %}
+        <tr>
+          <td>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <strong>{{ booking.student }}</strong>
+              <small style="color:var(--muted); font-size:11px;">Roll: {{ booking.student.roll_number }}</small>
+              {% if booking.student.room %}
+                <small style="color:#059669; font-size:10px;">Current Room: {{ booking.student.room.number }}</small>
+              {% else %}
+                <small style="color:#d97706; font-size:10px;">Current: Unallocated</small>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <span class="room-number"><strong>{{ booking.room.number }}</strong></span>
+              <small style="color:var(--muted); font-size:10px;">Type: {{ booking.room.get_room_type_display }}</small>
+            </div>
+          </td>
+          <td style="max-width: 320px;">
+            {% if booking.request_message %}
+              <div style="display:flex; align-items:flex-start; gap:6px; margin-bottom:4px;">
+                <i class="fa-regular fa-comment-dots" style="color:var(--primary); margin-top:2px;" title="Student message"></i>
+                <span style="font-size:12px; color:#334155; line-height:1.35;">{{ booking.request_message }}</span>
+              </div>
+            {% else %}
+              <span style="color:var(--muted); font-style:italic; font-size:11px;">No message provided</span>
+            {% endif %}
+
+            {% if booking.status == "CANCELLED" and booking.rejection_reason %}
+              <div style="margin-top:6px; padding:6px 10px; background:#fef2f2; border-left:3px solid #ef4444; border-radius:4px;">
+                <strong style="color:#b91c1c; font-size:10.5px; display:block; margin-bottom:2px;">
+                  <i class="fa-solid fa-circle-exclamation"></i> Rejection Reason:
+                </strong>
+                <span style="color:#991b1b; font-size:11.5px; line-height:1.3;">{{ booking.rejection_reason }}</span>
+              </div>
+            {% endif %}
+          </td>
+          <td>
+            {% if request.user.role == "ADMIN" or request.user.role == "WARDEN" %}
+              <div class="booking-status-box">
+                <form method="post" action="{% url 'bookings:booking_status' booking.pk %}" class="booking-status-form" data-booking-id="{{ booking.pk }}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <select class="status-select" name="status" data-status-dropdown>
+                      {% for value,label in booking.Status.choices %}
+                        <option value="{{ value }}" {% if booking.status == value %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+
+                    <div class="rejection-input-group" data-rejection-group style="display: {% if booking.status == 'CANCELLED' %}block{% else %}none{% endif %};">
+                      <input type="text" name="rejection_reason" class="search-box" style="font-size:11px; padding:4px 8px; min-height:30px; width:100%; border-color:#fca5a5;" placeholder="Reason for rejection/cancellation" value="{{ booking.rejection_reason }}">
+                    </div>
+
+                    <button type="submit" class="filter-button" style="min-height:28px; padding:2px 8px; font-size:10.5px; justify-content:center; background:#f8fafc;">
+                      Update
+                    </button>
+                  </div>
+                </form>
+              </div>
+            {% else %}
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                {% if booking.status == "CONFIRMED" %}
+                  <span class="status-pill" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">Confirmed</span>
+                {% elif booking.status == "CANCELLED" %}
+                  <span class="status-pill" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca;">Cancelled / Rejected</span>
+                {% else %}
+                  <span class="status-pill" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">Pending Review</span>
+                {% endif %}
+              </div>
+            {% endif %}
+          </td>
+          <td>{{ booking.requested_at|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">No matching room bookings found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer">
+    <span>Showing {{ page_obj.paginator.count }} requests</span>
+    {% include "components/pagination.html" %}
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll("[data-status-dropdown]").forEach(function(select) {
+    var form = select.closest("form");
+    var rejGroup = form.querySelector("[data-rejection-group]");
+    select.addEventListener("change", function() {
+      if (select.value === "CANCELLED") {
+        rejGroup.style.display = "block";
+        var input = rejGroup.querySelector("input");
+        if (input) input.focus();
+      } else {
+        rejGroup.style.display = "none";
+      }
+    });
+  });
+});
+</script>
+{% endblock %}
