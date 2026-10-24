@@ -13,7 +13,7 @@ DEVELOPMENT / DEMO ACCOUNTS ONLY — do not use these credentials in production.
 
 | Username | Password | Role |
 | --- | --- | --- |
-| `admin` | `admin123` | ADMIN |
+| `demo_admin` | `admin123` | ADMIN |
 | `warden` | `warden123` | WARDEN |
 | `student` | `student123` | STUDENT |
 
