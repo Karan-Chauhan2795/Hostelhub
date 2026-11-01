@@ -1,6 +1,9 @@
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, UpdateView
+from django.db import transaction
+from django.db.models import Count, F, Q
+from django.shortcuts import redirect
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from accounts.mixins import RoleRequiredMixin
 from .forms import RoomForm
@@ -14,18 +17,17 @@ class RoomManagementView(RoleRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        rooms = Room.objects.all()
+        rooms = Room.objects.annotate(occupied_residents=Count("residents")).order_by("number")
         query = self.request.GET.get("q", "").strip()
         if query:
-            from django.db.models import Q
             rooms = rooms.filter(Q(number__icontains=query) | Q(room_type__icontains=query))
         status = self.request.GET.get("status")
         if status == "VACANT":
-            rooms = [room for room in rooms if room.occupied_count == 0]
+            rooms = rooms.filter(occupied_residents=0)
         elif status == "AVAILABLE":
-            rooms = [room for room in rooms if room.occupied_count < room.capacity]
+            rooms = rooms.filter(occupied_residents__lt=F("capacity"))
         elif status == "OCCUPIED":
-            rooms = [room for room in rooms if room.occupied_count >= room.capacity]
+            rooms = rooms.filter(occupied_residents__gte=F("capacity"))
         return rooms
 
 
@@ -33,11 +35,48 @@ class RoomCreateView(RoleRequiredMixin, CreateView):
     template_name = "rooms/room_create.html"
     form_class = RoomForm
     success_url = reverse_lazy("rooms:room_management")
-    allowed_roles = ("ADMIN", "WARDEN")
+    allowed_roles = ("ADMIN",)
 
     def form_valid(self, form):
         messages.success(self.request, "Room added.")
         return super().form_valid(form)
+
+
+class RoomDeleteView(RoleRequiredMixin, DeleteView):
+    model = Room
+    template_name = "rooms/room_confirm_delete.html"
+    success_url = reverse_lazy("rooms:room_management")
+    allowed_roles = ("ADMIN",)
+
+    def get_queryset(self):
+        return Room.objects.annotate(occupied_residents=Count("residents"))
+
+    def form_valid(self, form):
+        room = self.get_object()
+        room_number = room.number
+
+        if room.occupied_count > 0:
+            messages.error(
+                self.request,
+                f"Cannot delete Room '{room_number}' because it has {room.occupied_count} resident(s) allocated. Please reassign or vacate residents first.",
+            )
+            return redirect(self.success_url)
+
+        if hasattr(room, "bookings") and room.bookings.filter(status="CONFIRMED").exists():
+            messages.error(
+                self.request,
+                f"Cannot delete Room '{room_number}' because it has active confirmed bookings.",
+            )
+            return redirect(self.success_url)
+
+        try:
+            with transaction.atomic():
+                room.bookings.filter(status__in=["PENDING", "CANCELLED"]).delete()
+                room.delete()
+            messages.success(self.request, f"Room '{room_number}' was deleted successfully.")
+        except Exception as e:
+            messages.error(self.request, f"Could not delete Room '{room_number}': {e}")
+        return redirect(self.success_url)
 
 
 class RoomUpdateView(RoleRequiredMixin, UpdateView):
@@ -45,7 +84,7 @@ class RoomUpdateView(RoleRequiredMixin, UpdateView):
     form_class = RoomForm
     model = Room
     success_url = reverse_lazy("rooms:room_management")
-    allowed_roles = ("ADMIN", "WARDEN")
+    allowed_roles = ("ADMIN",)
 
 
 import json

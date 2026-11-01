@@ -13,7 +13,7 @@ _allowed_hosts_env = os.getenv("ALLOWED_HOSTS", "")
 if _allowed_hosts_env:
     ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(",") if h.strip()]
 elif DEBUG:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
+    ALLOWED_HOSTS = ["*"]
 else:
     ALLOWED_HOSTS = []
 
@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     "notices",
     "nova_ai",
     "reports",
-    "settings_app",
 ]
 
 MIDDLEWARE = [
@@ -90,6 +89,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"

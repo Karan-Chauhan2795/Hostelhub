@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}My Visitors | HostelHub{% endblock %}
+
+{% block content %}
+<section class="management-header" style="margin-bottom: 24px;">
+  <div>
+    <p class="eyebrow">Personal Visit Log</p>
+    <h2>My Visitors</h2>
+    <p>Track visitors, relatives, and guests who have checked in to meet you at the hostel.</p>
+  </div>
+  {% if object_list %}
+    <div class="soft-pill success-pill" style="font-size: 12px; padding: 7px 14px;">
+      <i class="fa-solid fa-user-shield" style="margin-right: 4px;"></i> {{ object_list.count }} Total Visit{{ object_list.count|pluralize }}
+    </div>
+  {% endif %}
+</section>
+
+<!-- Student Privacy & Security Notice Callout -->
+<div class="card" style="margin-bottom: 24px; padding: 18px 22px; background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1px solid #bfdbfe; border-radius: 16px; display: flex; align-items: flex-start; gap: 14px;">
+  <div style="width: 38px; height: 38px; border-radius: 11px; background: #2563eb; color: #fff; display: grid; place-items: center; font-size: 16px; flex-shrink: 0;">
+    <i class="fa-solid fa-shield-cat"></i>
+  </div>
+  <div style="font-size: 13px; color: #334155; line-height: 1.55;">
+    <strong style="color: #1e3a8a; font-size: 13.5px; display: block; margin-bottom: 3px;">Privacy Protected Log:</strong>
+    For your privacy and safety, this ledger exclusively reflects visitors registered directly under your resident profile. All visitors must be received in authorized hostel visitor lounges or designated reception areas.
+  </div>
+</div>
+
+<section class="card table-card">
+  <form method="get" class="table-toolbar filter-form">
+    <div class="search-control">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input class="search-box" type="search" name="q" value="{{ request.GET.q }}" placeholder="Search by visitor name, relation, or purpose...">
+    </div>
+    <div class="filter-actions">
+      {% if request.GET.q %}
+        <a href="{% url 'visitors:visitor_list' %}" class="filter-button" style="text-decoration:none;">
+          <i class="fa-solid fa-xmark"></i> Clear
+        </a>
+      {% endif %}
+      <button class="filter-button" type="submit">
+        <i class="fa-solid fa-filter"></i> Search
+      </button>
+    </div>
+  </form>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Visitor Name & Relation</th>
+          <th>Meeting Location</th>
+          <th>Purpose of Visit</th>
+          <th>Check-in Date & Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for visitor in object_list %}
+        <tr>
+          <!-- Visitor Name & Relation -->
+          <td>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="table-person" style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg, #dbeafe, #bfdbfe); color:#1d4ed8; font-size:13px; font-weight:700;">
+                {{ visitor.name|slice:":1"|upper }}
+              </span>
+              <div style="display:grid; gap:3px;">
+                <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap;">
+                  <strong style="font-size:13.5px; color:#0f172a;">{{ visitor.name }}</strong>
+                  {% if visitor.relation %}
+                    <span class="soft-pill" style="font-size:10px; padding:2px 8px; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-weight:700;">
+                      <i class="fa-solid fa-people-arrows" style="font-size:8.5px; margin-right:3px;"></i>{{ visitor.relation }}
+                    </span>
+                  {% endif %}
+                </div>
+                {% if visitor.phone %}
+                  <small style="color:var(--muted); font-size:11px;">
+                    <i class="fa-solid fa-phone" style="font-size:9px; margin-right:4px;"></i>{{ visitor.phone }}
+                  </small>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+
+          <!-- Where / Location -->
+          <td>
+            <div style="display:grid; gap:3px;">
+              {% if visitor.student.room %}
+                <span class="status-pill status-pill-confirmed" style="padding:3px 10px; font-size:11px; width:fit-content; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">
+                  <i class="fa-solid fa-door-open" style="margin-right:4px;"></i>Room {{ visitor.student.room.number }}
+                </span>
+                <small style="color:var(--muted); font-size:10.5px;">Resident Block / Visitor Area</small>
+              {% else %}
+                <span class="soft-pill" style="font-size:11px; color:#64748b;">Hostel Reception Area</span>
+              {% endif %}
+            </div>
+          </td>
+
+          <!-- Purpose -->
+          <td>
+            <span class="soft-pill" style="font-weight:600; font-size:11.5px; color:#334155; background:#f8fafc; border:1px solid #e2e8f0; padding:5px 10px;">
+              <i class="fa-regular fa-clipboard" style="margin-right:5px; font-size:10px; color:var(--primary);"></i>{{ visitor.purpose }}
+            </span>
+          </td>
+
+          <!-- Check-in Time -->
+          <td>
+            <div style="display:grid; gap:2px;">
+              <strong style="font-size:12.5px; color:#1e293b;">
+                <i class="fa-regular fa-calendar-days" style="font-size:10px; margin-right:4px; color:var(--muted);"></i>{{ visitor.check_in|date:"d M Y" }}
+              </strong>
+              <small style="color:var(--muted); font-size:11px;">
+                <i class="fa-regular fa-clock" style="font-size:9.5px; margin-right:3px;"></i>{{ visitor.check_in|date:"h:i A" }}
+              </small>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align:center; padding:45px 20px; color:var(--muted);">
+            <i class="fa-solid fa-user-group" style="font-size:32px; opacity:0.3; margin-bottom:12px; display:block;"></i>
+            <strong style="font-size:14px; color:#475569; display:block; margin-bottom:4px;">No Visitor Records Yet</strong>
+            <p style="font-size:12px; color:var(--muted); margin:0;">When family or authorized guests visit you at the hostel, their verified entry records will show up here.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="table-footer">
+    {% include "components/pagination.html" %}
+  </div>
+</section>
+{% endblock %}
+

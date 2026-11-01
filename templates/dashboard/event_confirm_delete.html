@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Delete Event | HostelHub{% endblock %}
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow">Confirm Action</p>
+    <h2>Delete Event</h2>
+    <p>Are you sure you want to delete this event from the hostel calendar?</p>
+  </div>
+  <a class="btn-micro btn-micro-outline" href="{{ cancel_url }}" style="font-size: 12px; padding: 8px 14px; text-decoration: none;">
+    <i class="fa-solid fa-arrow-left"></i> Cancel
+  </a>
+</section>
+
+<section class="card page-card" style="max-width: 540px; margin: 0 auto; text-align: center; padding: 36px 24px;">
+  <div style="width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: grid; place-items: center; font-size: 24px;">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+  </div>
+  <h3 style="margin: 0 0 8px; font-size: 20px;">Delete "{{ object.title }}"?</h3>
+  <p style="color: var(--muted); font-size: 13px; margin-bottom: 24px;">
+    Scheduled on <strong>{{ display_date|date:"d M Y" }} at {{ object.event_time|time:"g:i A" }}</strong>. This action cannot be undone.
+  </p>
+
+  <form method="post" style="display: flex; justify-content: center; gap: 12px;">
+    {% csrf_token %}
+    <a href="{{ cancel_url }}" class="btn btn-outline btn-event-cancel"><i class="fa-solid fa-xmark" style="margin-right: 6px;"></i>Keep Event</a>
+    <button type="submit" class="btn" style="background: #dc2626; color: #fff; border-color: #dc2626;"><i class="fa-regular fa-trash-can" style="margin-right: 6px;"></i>Yes, Delete Event</button>
+  </form>
+</section>
+{% endblock %}

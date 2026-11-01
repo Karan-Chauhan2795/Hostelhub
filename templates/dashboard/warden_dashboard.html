@@ -8,5 +8,162 @@
     </article>
     {% endfor %}
 </section>
-<section class="dashboard-grid activity-layout"><article class="card"><div class="card-heading"><div><p class="eyebrow">Live updates</p><h3>Daily alerts</h3></div><span class="live-label"><i class="fa-solid fa-circle"></i> Live</span></div><ul class="activity-list">{% for alert in alerts %}<li><span class="activity-icon activity-icon-teal"><i class="fa-solid fa-bolt"></i></span><span><strong>{{ alert.clean_display_title|default:alert }}</strong><small>Updated a few minutes ago</small></span><i class="fa-solid fa-arrow-right"></i></li>{% empty %}<li><span>No active alerts.</span></li>{% endfor %}</ul></article><article class="card checklist-card" data-warden-checklist data-checklist-date="{{ today|date:'Y-m-d' }}"><div class="card-heading"><div><p class="eyebrow">Night routine</p><h3>Today’s checklist</h3></div><span class="soft-pill" data-checklist-count>3 / 5</span></div><ul class="checklist-interactive"><li class="done" data-check-id="entrance" role="button" tabindex="0" title="Click to toggle check"><i class="fa-solid fa-check"></i>Entrance check completed</li><li class="done" data-check-id="visitor_log" role="button" tabindex="0" title="Click to toggle check"><i class="fa-solid fa-check"></i>Visitor log reconciled</li><li class="done" data-check-id="common_areas" role="button" tabindex="0" title="Click to toggle check"><i class="fa-solid fa-check"></i>Common areas reviewed</li><li data-check-id="floor_round" role="button" tabindex="0" title="Click to toggle check"><i></i>Floor B round</li><li data-check-id="curfew" role="button" tabindex="0" title="Click to toggle check"><i></i>Curfew confirmation</li></ul></article></section>
+<section class="dashboard-grid activity-layout">
+    <article class="card">
+        <div class="card-heading">
+            <div>
+                <p class="eyebrow">Live updates</p>
+                <h3>Daily alerts</h3>
+            </div>
+            <a href="{% url 'notices:notice_list' %}" class="text-link">View all</a>
+        </div>
+        <ul class="activity-list">
+            {% for alert in alerts %}
+            <li>
+                <a href="{% url 'notices:notice_list' %}" class="activity-item" title="View notice: {{ alert.clean_display_title|default:alert.title }}">
+                    <span class="activity-icon activity-icon-teal"><i class="fa-solid fa-bolt"></i></span>
+                    <span>
+                        <strong>{{ alert.clean_display_title|default:alert.title }}</strong>
+                        <small>{{ alert.created_at|timesince }} ago</small>
+                    </span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </li>
+            {% empty %}
+            <li><span>No active alerts.</span></li>
+            {% endfor %}
+        </ul>
+    </article>
+    <article class="card checklist-card" data-warden-checklist data-checklist-date="{{ today|date:'Y-m-d' }}">
+        <div class="card-heading">
+            <div>
+                <p class="eyebrow">Night routine</p>
+                <h3>Today’s checklist</h3>
+            </div>
+            <span class="soft-pill" data-checklist-count>3 / 5</span>
+        </div>
+        <ul class="checklist-interactive">
+            <li class="done" data-check-id="entrance" role="button" tabindex="0" title="Click to toggle check"><i class="fa-solid fa-check"></i>Entrance check completed</li>
+            <li class="done" data-check-id="visitor_log" role="button" tabindex="0" title="Click to toggle check"><i class="fa-solid fa-check"></i>Visitor log reconciled</li>
+            <li class="done" data-check-id="common_areas" role="button" tabindex="0" title="Click to toggle check"><i class="fa-solid fa-check"></i>Common areas reviewed</li>
+            <li data-check-id="floor_round" role="button" tabindex="0" title="Click to toggle check"><i></i>Floor B round</li>
+            <li data-check-id="curfew" role="button" tabindex="0" title="Click to toggle check"><i></i>Curfew confirmation</li>
+        </ul>
+    </article>
+</section>
+
+<section class="dashboard-grid activity-layout" style="margin-top: 22px;">
+    <!-- Calendar Card for Warden -->
+    <article class="card calendar-card" id="warden-calendar-card" data-calendar-card data-api-url="{% url 'dashboard:calendar_day_events_api' %}">
+        <div class="card-heading">
+            <div>
+                <p class="eyebrow" data-calendar-selected-title>Hostel schedule · {{ selected_date|date:"D, d M" }}</p>
+                <h3 data-calendar-month-year>{{ calendar_month_year }}</h3>
+            </div>
+            <div class="calendar-menu-wrapper" data-calendar-menu>
+                <a href="?date={{ prev_week_str }}" class="icon-button-mini" title="Previous week" data-calendar-nav="prev"><i class="fa-solid fa-chevron-left"></i></a>
+                <a href="?date={{ today|date:'Y-m-d' }}" class="btn-calendar-today" title="Jump to today" data-calendar-nav="today">Today</a>
+                <a href="?date={{ next_week_str }}" class="icon-button-mini" title="Next week" data-calendar-nav="next"><i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </div>
+        <div class="calendar-week">{% for day in calendar_week_days %}<span>{{ day.label }}</span>{% endfor %}</div>
+        <div class="calendar-days" data-calendar-days-container>
+            {% for day in calendar_week_days %}
+            <a href="?date={{ day.date_str }}" data-calendar-day data-date="{{ day.date_str }}" class="calendar-day-btn {% if day.is_selected %}is-selected{% endif %} {% if day.is_today %}today{% endif %}" title="{{ day.date|date:'d M Y' }} ({{ day.event_count }} event{{ day.event_count|pluralize }})">
+                <span>{{ day.day_number }}</span>
+                {% if day.has_event %}
+                    <span class="day-dot"></span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+
+        <div data-calendar-next-event-container>
+            {% if next_event %}
+            <div class="next-event next-event-interactive" style="cursor: pointer;" data-href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" title="Click to view in Event Management">
+                <i class="{% if next_event.event_type == 'DINNER' %}fa-solid fa-utensils{% elif next_event.event_type == 'MEETING' %}fa-solid fa-users{% elif next_event.event_type == 'MAINTENANCE' %}fa-solid fa-screwdriver-wrench{% elif next_event.event_type == 'SPORTS' %}fa-solid fa-volleyball{% elif next_event.event_type == 'CELEBRATION' %}fa-solid fa-cake-candles{% else %}fa-regular fa-calendar-check{% endif %}"></i>
+                <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <strong>{{ next_event.title }}</strong>
+                        {% if next_event.is_recurring_daily %}
+                            <span class="status-badge badge-warning" style="font-size: 9.5px; padding: 2px 7px;">Daily</span>
+                        {% endif %}
+                    </div>
+                    <small>
+                        {% if selected_date == today %}Today{% else %}{{ selected_date|date:"D, d M" }}{% endif %} · {{ next_event.formatted_time_range }} · {{ next_event.location }}
+                    </small>
+                    {% if next_event.description %}
+                        <span class="event-inline-desc">{{ next_event.description|truncatechars:75 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="next-event next-event-empty">
+                <i class="fa-regular fa-circle-check" style="background:#ecfdf5; color:#059669;"></i>
+                <div>
+                    <strong>No events on this day</strong>
+                    <small>{{ selected_date|date:"l, d M Y" }}</small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="calendar-card-footer">
+            <a href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" class="btn-calendar-link" data-calendar-footer-link>
+                <i class="fa-regular fa-calendar-days" style="margin-right: 4px;"></i>View all scheduled events <i class="fa-solid fa-arrow-right" style="font-size: 10px; margin-left: 3px;"></i>
+            </a>
+        </div>
+    </article>
+
+    <!-- Professional Routine & Preparation Readiness Card for Warden -->
+    <article class="card readiness-card">
+        <div class="card-heading">
+            <div>
+                <p class="eyebrow">Readiness & preparation</p>
+                <h3 data-readiness-title>Agenda for {{ selected_date|date:"D, d M" }}</h3>
+            </div>
+            <a href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" class="btn-micro btn-micro-outline" data-warden-full-agenda-btn style="font-size: 11px; padding: 5px 10px; text-decoration: none;"><i class="fa-regular fa-calendar-days" style="margin-right: 4px;"></i>Full agenda <i class="fa-solid fa-arrow-right" style="font-size: 10px; margin-left: 2px;"></i></a>
+        </div>
+        <ul class="readiness-activity-list" data-readiness-list>
+            {% for ev in selected_day_events %}
+            <li class="readiness-item-wrap">
+                <div class="readiness-item" style="cursor: pointer;" data-href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" title="Click to view in Event Management">
+                    <span class="readiness-icon {% if ev.event_type == 'DINNER' %}readiness-icon-orange{% elif ev.event_type == 'MEETING' %}readiness-icon-blue{% else %}readiness-icon-teal{% endif %}">
+                        <i class="{% if ev.event_type == 'DINNER' %}fa-solid fa-utensils{% elif ev.event_type == 'MEETING' %}fa-solid fa-users{% elif ev.event_type == 'MAINTENANCE' %}fa-solid fa-screwdriver-wrench{% elif ev.event_type == 'SPORTS' %}fa-solid fa-volleyball{% elif ev.event_type == 'CELEBRATION' %}fa-solid fa-cake-candles{% else %}fa-regular fa-calendar-check{% endif %}"></i>
+                    </span>
+                    <div class="readiness-details">
+                        <div class="readiness-title-row">
+                            <strong>{{ ev.title }}</strong>
+                        </div>
+                        <div class="readiness-tags-row">
+                            {% if ev.audience == "WARDEN_ONLY" %}
+                                <span class="badge-audience-warden"><i class="fa-solid fa-user-shield"></i> Warden Only</span>
+                            {% else %}
+                                <span class="badge-audience-all"><i class="fa-solid fa-users"></i> All</span>
+                            {% endif %}
+                            {% if ev.is_recurring_daily %}
+                                <span class="status-badge badge-warning" style="font-size: 10px; padding: 2px 7px;"><i class="fa-solid fa-repeat" style="font-size: 8px; margin-right: 3px;"></i>Daily</span>
+                            {% else %}
+                                <span class="status-badge badge-info" style="font-size: 10px; padding: 2px 7px;">{{ ev.get_event_type_display }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="readiness-meta">
+                            <span><i class="fa-regular fa-clock"></i> {{ ev.formatted_time_range }}</span>
+                            <span><i class="fa-solid fa-location-dot"></i> {{ ev.location }}</span>
+                        </div>
+                        {% if ev.description %}
+                            <p class="readiness-desc">{{ ev.description|truncatechars:120 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% empty %}
+            <li class="empty-activity-notice">
+                <span class="activity-icon" style="background:#f1f5f9; color:#94a3b8;"><i class="fa-regular fa-circle-check"></i></span>
+                <span><strong>No special agenda scheduled</strong><small>Routine hostel management & floor inspections in progress.</small></span>
+            </li>
+            {% endfor %}
+        </ul>
+    </article>
+</section>
 {% endblock %}

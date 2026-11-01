@@ -20,7 +20,7 @@ def notifications_context(request):
     latest_id = latest_notices[0].pk if latest_notices else 0
 
     state_components = [f"{n.pk}:{len(n.title)}:{len(n.body)}" for n in latest_notices]
-    state_sig = f"{len(queryset)}-{','.join(state_components)}"
+    state_sig = f"{queryset.count()}-{','.join(state_components)}"
 
     return {
         "navbar_notifications": latest_notices,

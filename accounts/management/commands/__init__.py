@@ -1,1 +1,1 @@
-"""Account management commands."""
+# Package marker

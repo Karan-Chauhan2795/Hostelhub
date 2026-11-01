@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title }} | HostelHub{% endblock %}
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow">Admin event management</p>
+    <h2>{{ form_title }}</h2>
+    <p>Configure event details, schedules, and locations for students and wardens.</p>
+  </div>
+  <a class="btn-micro btn-micro-outline" href="{{ cancel_url }}" style="font-size: 12px; padding: 8px 14px; text-decoration: none;">
+    <i class="fa-solid fa-arrow-left"></i> Back to calendar
+  </a>
+</section>
+
+<section class="card page-card form-card event-form-card" style="max-width: 680px; margin: 0 auto;">
+  <form method="post" class="data-form">
+    {% csrf_token %}
+    <input type="hidden" name="return_to" value="{{ cancel_url }}">
+    
+    <div class="form-field">
+      <label for="{{ form.title.id_for_label }}">Event Title *</label>
+      {{ form.title }}
+      {% if form.title.errors %}<div class="field-error">{{ form.title.errors }}</div>{% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div class="form-field">
+        <label for="{{ form.event_type.id_for_label }}">Event Category</label>
+        {{ form.event_type }}
+        {% if form.event_type.errors %}<div class="field-error">{{ form.event_type.errors }}</div>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.audience.id_for_label }}">Target Audience (Visibility)</label>
+        {{ form.audience }}
+        {% if form.audience.errors %}<div class="field-error">{{ form.audience.errors }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="{{ form.location.id_for_label }}">Location / Venue</label>
+      {{ form.location }}
+      {% if form.location.errors %}<div class="field-error">{{ form.location.errors }}</div>{% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 16px;">
+      <div class="form-field">
+        <label for="{{ form.event_date.id_for_label }}">Event Date</label>
+        {{ form.event_date }}
+        {% if form.event_date.errors %}<div class="field-error">{{ form.event_date.errors }}</div>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.event_time.id_for_label }}">Start Time *</label>
+        {{ form.event_time }}
+        {% if form.event_time.errors %}<div class="field-error">{{ form.event_time.errors }}</div>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.end_time.id_for_label }}">End Time <span style="font-size: 11px; font-weight: normal; color: var(--muted);">(Optional)</span></label>
+        {{ form.end_time }}
+        {% if form.end_time.errors %}<div class="field-error">{{ form.end_time.errors }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="{{ form.description.id_for_label }}">Description / Preparations for Students & Wardens</label>
+      {{ form.description }}
+      {% if form.description.errors %}<div class="field-error">{{ form.description.errors }}</div>{% endif %}
+    </div>
+
+    <div class="form-field" style="display: flex; align-items: center; gap: 10px; margin-top: 6px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+      {{ form.is_recurring_daily }}
+      <label for="{{ form.is_recurring_daily.id_for_label }}" style="margin: 0; cursor: pointer;">
+        <strong>Recurring Daily Event</strong>
+        <span style="display: block; font-size: 11px; color: var(--muted); font-weight: normal;">Check this to repeat this event (e.g. Community Dinner) every day on the calendar.</span>
+      </label>
+    </div>
+
+    <div class="form-actions" style="margin-top: 20px; display: flex; align-items: center; gap: 12px;">
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check" style="margin-right: 6px;"></i>{{ submit_label }}</button>
+      <a href="{{ cancel_url }}" class="btn btn-outline btn-event-cancel"><i class="fa-solid fa-xmark" style="margin-right: 6px;"></i>Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -35,10 +35,6 @@ class StudentReportView(AdminReportView):
         return context
 
 
-class AttendanceReportView(AdminReportView):
-    template_name = "reports/attendance_report.html"
-
-
 class RoomReportView(AdminReportView):
     template_name = "reports/room_report.html"
 

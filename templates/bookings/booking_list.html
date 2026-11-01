@@ -9,9 +9,14 @@
     <p>Manage and track room requests and room shift applications.</p>
   </div>
   {% if request.user.role == "STUDENT" %}
-    <a class="btn btn-primary" href="{% url 'bookings:booking_create' %}">
-      <i class="fa-solid fa-bed"></i> Request booking
-    </a>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <a class="btn btn-secondary" href="{% url 'bookings:booking_history' %}">
+        <i class="fa-solid fa-clock-rotate-left"></i> My history
+      </a>
+      <a class="btn btn-primary" href="{% url 'bookings:booking_create' %}">
+        <i class="fa-solid fa-bed"></i> Request booking
+      </a>
+    </div>
   {% endif %}
 </section>
 
@@ -95,7 +100,7 @@
                       {% endfor %}
                     </select>
 
-                    <div class="rejection-input-group" data-rejection-group style="display: {% if booking.status == 'CANCELLED' %}block{% else %}none{% endif %};">
+                    <div class="rejection-input-group" data-rejection-group {% if booking.status != 'CANCELLED' %}style="display:none;"{% endif %}>
                       <input type="text" name="rejection_reason" class="search-box" style="font-size:11px; padding:4px 8px; min-height:30px; width:100%; border-color:#fca5a5;" placeholder="Reason for rejection/cancellation" value="{{ booking.rejection_reason }}">
                     </div>
 
@@ -108,11 +113,11 @@
             {% else %}
               <div style="display:flex; flex-direction:column; gap:4px;">
                 {% if booking.status == "CONFIRMED" %}
-                  <span class="status-pill" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">Confirmed</span>
+                  <span class="status-pill status-pill-confirmed">Confirmed</span>
                 {% elif booking.status == "CANCELLED" %}
-                  <span class="status-pill" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca;">Cancelled / Rejected</span>
+                  <span class="status-pill status-pill-cancelled">Cancelled / Rejected</span>
                 {% else %}
-                  <span class="status-pill" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">Pending Review</span>
+                  <span class="status-pill status-pill-pending">Pending Review</span>
                 {% endif %}
               </div>
             {% endif %}

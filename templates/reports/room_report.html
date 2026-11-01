@@ -1,3 +1,49 @@
 {% extends "base.html" %}
 {% block title %}Room Report | HostelHub{% endblock %}
-{% block content %}<section class="card table-card"><div class="card-heading"><div><p class="eyebrow">Live report</p><h2>Rooms</h2></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Room</th><th>Type</th><th>Residents</th><th>Capacity</th></tr></thead><tbody>{% for room in rooms %}<tr><td>{{ room.number }}</td><td>{{ room.get_room_type_display }}</td><td>{{ room.resident_count }}</td><td>{{ room.capacity }}</td></tr>{% empty %}<tr><td colspan="4">No rooms recorded.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow"><a href="{% url 'reports:reports_dashboard' %}" style="text-decoration: none; color: inherit;"><i class="fa-solid fa-arrow-left"></i> Reports</a> / Live Report</p>
+    <h2>Room Report</h2>
+    <p>Live inventory analysis of hostel rooms, bed capacity, and current resident occupancy.</p>
+  </div>
+  <a class="btn btn-secondary" href="{% url 'reports:reports_dashboard' %}">
+    <i class="fa-solid fa-arrow-left"></i> Back to Reports
+  </a>
+</section>
+
+<section class="card table-card">
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Type</th>
+          <th>Occupancy</th>
+          <th>Status</th>
+          <th>Capacity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for room in rooms %}
+        <tr>
+          <td><strong>{{ room.number }}</strong></td>
+          <td>{{ room.get_room_type_display }}</td>
+          <td>{{ room.resident_count }} resident{{ room.resident_count|pluralize }}</td>
+          <td>
+            <span class="status-pill {% if room.resident_count == 0 %}status-pill-confirmed{% elif room.resident_count >= room.capacity %}status-pill-full{% else %}status-pill-progress{% endif %}">
+              {{ room.status }}
+            </span>
+          </td>
+          <td>{{ room.capacity }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 24px; color: var(--muted);">No rooms recorded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

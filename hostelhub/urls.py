@@ -1,9 +1,12 @@
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import include, path
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
+    path("favicon.ico", RedirectView.as_view(url=staticfiles_storage.url("favicon.ico")), name="favicon"),
     path("admin/", admin.site.urls),
     path("", include("dashboard.urls")),
     path("accounts/", include("accounts.urls", namespace="accounts")),
@@ -16,7 +19,7 @@ urlpatterns = [
     path("notices/", include("notices.urls", namespace="notices")),
     path("nova-ai/", include("nova_ai.urls", namespace="nova_ai")),
     path("reports/", include("reports.urls", namespace="reports")),
-    path("settings/", include("settings_app.urls", namespace="settings_app")),
+    path("api/", include("hostelhub.api_urls", namespace="api")),
 ]
 
 # Development convenience: serve assets directly while DEBUG is enabled.

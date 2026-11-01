@@ -1,3 +1,49 @@
 {% extends "base.html" %}
 {% block title %}Student Report | HostelHub{% endblock %}
-{% block content %}<section class="card table-card"><div class="card-heading"><div><p class="eyebrow">Live report</p><h2>Students</h2></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Student</th><th>Roll number</th><th>Course</th><th>Room</th></tr></thead><tbody>{% for student in students %}<tr><td>{{ student }}</td><td>{{ student.roll_number }}</td><td>{{ student.course }}</td><td>{{ student.room|default:"Unassigned" }}</td></tr>{% empty %}<tr><td colspan="4">No student records.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow"><a href="{% url 'reports:reports_dashboard' %}" style="text-decoration: none; color: inherit;"><i class="fa-solid fa-arrow-left"></i> Reports</a> / Live Report</p>
+    <h2>Student Report</h2>
+    <p>Comprehensive overview of student hostel enrollments, assigned rooms, and academic courses.</p>
+  </div>
+  <a class="btn btn-secondary" href="{% url 'reports:reports_dashboard' %}">
+    <i class="fa-solid fa-arrow-left"></i> Back to Reports
+  </a>
+</section>
+
+<section class="card table-card">
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Roll number</th>
+          <th>Course</th>
+          <th>Room</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr>
+          <td><strong>{{ student }}</strong></td>
+          <td>{{ student.roll_number }}</td>
+          <td>{{ student.course }}</td>
+          <td>
+            {% if student.room %}
+              <span class="status-pill status-pill-confirmed"><i class="fa-solid fa-door-open"></i><span>{{ student.room.number }}</span></span>
+            {% else %}
+              <span class="status-pill status-pill-warning">Unassigned</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align: center; padding: 24px; color: var(--muted);">No student records found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

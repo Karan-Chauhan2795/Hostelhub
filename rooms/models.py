@@ -19,6 +19,8 @@ class Room(models.Model):
 
     @property
     def occupied_count(self):
+        if hasattr(self, "occupied_residents"):
+            return self.occupied_residents
         return self.residents.count()
 
     @property

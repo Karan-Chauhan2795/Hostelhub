@@ -1,3 +1,47 @@
 {% extends "base.html" %}
 {% block title %}Complaint Report | HostelHub{% endblock %}
-{% block content %}<section class="card table-card"><div class="card-heading"><div><p class="eyebrow">Live report</p><h2>Complaints</h2></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Student</th><th>Subject</th><th>Status</th><th>Raised</th></tr></thead><tbody>{% for complaint in complaints %}<tr><td>{{ complaint.student }}</td><td>{{ complaint.subject }}</td><td>{{ complaint.get_status_display }}</td><td>{{ complaint.created_at|date:"d M Y" }}</td></tr>{% empty %}<tr><td colspan="4">No complaints recorded.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow"><a href="{% url 'reports:reports_dashboard' %}" style="text-decoration: none; color: inherit;"><i class="fa-solid fa-arrow-left"></i> Reports</a> / Live Report</p>
+    <h2>Complaint Report</h2>
+    <p>Comprehensive report of student-filed complaints, maintenance tickets, and current resolution statuses.</p>
+  </div>
+  <a class="btn btn-secondary" href="{% url 'reports:reports_dashboard' %}">
+    <i class="fa-solid fa-arrow-left"></i> Back to Reports
+  </a>
+</section>
+
+<section class="card table-card">
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Subject</th>
+          <th>Status</th>
+          <th>Raised On</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for complaint in complaints %}
+        <tr>
+          <td><strong>{{ complaint.student }}</strong></td>
+          <td>{{ complaint.subject }}</td>
+          <td>
+            <span class="status-pill {% if complaint.status == 'RESOLVED' %}status-pill-resolved{% elif complaint.status == 'IN_PROGRESS' %}status-pill-progress{% else %}status-pill-warning{% endif %}">
+              {{ complaint.get_status_display }}
+            </span>
+          </td>
+          <td>{{ complaint.created_at|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align: center; padding: 24px; color: var(--muted);">No complaints recorded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

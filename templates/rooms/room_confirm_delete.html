@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Delete Room | HostelHub{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 14px;">
+  <a href="{% url 'rooms:room_management' %}" class="text-link" style="font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Room Management
+  </a>
+</div>
+
+<section class="card delete-modal-card" style="max-width: 580px; padding: 32px; border-radius: 18px; border: 1px solid #fee2e2; background: #ffffff; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05); position: relative;">
+  <style>
+    .delete-modal-card:after, .delete-modal-card:before { display: none !important; }
+  </style>
+
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+    <div style="width: 44px; height: 44px; border-radius: 12px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+      <i class="fa-regular fa-trash-can"></i>
+    </div>
+    <div>
+      <span class="status-pill" style="background: #fee2e2; color: #991b1b; font-weight: 600; font-size: 11px;">Danger Action</span>
+      <h2 style="color: #0f172a; margin: 4px 0 0 0; font-size: 22px;">Delete Room?</h2>
+    </div>
+  </div>
+
+  <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 16px 0 20px 0;">
+    Are you sure you want to delete <strong style="color: #0f172a;">Room {{ object.number }}</strong> ({{ object.get_room_type_display }}, Capacity: {{ object.capacity }}) from the hostel room inventory?
+  </p>
+
+  {% if object.occupied_count > 0 %}
+    <div style="background: #fef2f2; border-left: 3px solid #ef4444; border-radius: 6px; padding: 12px 14px; margin-bottom: 24px; font-size: 12.5px; color: #991b1b; line-height: 1.45;">
+      <strong>Error:</strong> This room currently has <strong>{{ object.occupied_count }} resident(s) allocated</strong>. You cannot delete an occupied room. Please vacate or transfer the residents before deleting.
+    </div>
+  {% else %}
+    <div style="background: #fff7ed; border-left: 3px solid #ea580c; border-radius: 6px; padding: 12px 14px; margin-bottom: 24px; font-size: 12.5px; color: #9a3412; line-height: 1.45;">
+      <strong>Notice:</strong> This action will permanently remove this room record from the system. Any pending or cancelled booking applications associated with this room will be cleared.
+    </div>
+  {% endif %}
+
+  <form method="post" class="data-form">
+    {% csrf_token %}
+    <div style="display: flex; gap: 10px; justify-content: flex-start; align-items: center;">
+      <a class="btn btn-secondary" href="{% url 'rooms:room_management' %}" style="padding: 10px 18px; border-radius: 8px;">Cancel</a>
+      {% if object.occupied_count == 0 %}
+        <button class="btn btn-danger" type="submit" style="background: #dc2626; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+          <i class="fa-regular fa-trash-can"></i> Yes, Delete Room
+        </button>
+      {% endif %}
+    </div>
+  </form>
+</section>
+{% endblock %}
+

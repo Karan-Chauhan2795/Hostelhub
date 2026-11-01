@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Hostel Events & Calendar | HostelHub{% endblock %}
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow">Hostel schedule & calendar</p>
+    <h2>Events & Activities</h2>
+    <p>View upcoming hostel activities, celebrations, inspections, and daily dinners.</p>
+  </div>
+  {% if request.user.role == "ADMIN" %}
+    <a class="btn btn-primary" href="{% url 'dashboard:event_create' %}">
+      <i class="fa-solid fa-plus"></i> Add new event
+    </a>
+  {% endif %}
+</section>
+
+<!-- Interactive Week Selector Ribbon -->
+<section class="card calendar-ribbon-card" data-calendar-ribbon data-api-url="{% url 'dashboard:calendar_day_events_api' %}">
+  <div class="calendar-ribbon-header">
+    <div class="ribbon-title">
+      <i class="fa-regular fa-calendar-days"></i>
+      <div>
+        <h3 data-calendar-month-year>{{ calendar_month_year }}</h3>
+        <p>Selected date: <strong data-calendar-selected-full>{{ selected_date|date:"l, d F Y" }}</strong></p>
+      </div>
+    </div>
+    <div class="ribbon-nav">
+      <a href="?date={{ prev_week_str }}" class="icon-button" title="Previous week" data-calendar-nav="prev"><i class="fa-solid fa-chevron-left"></i></a>
+      <a href="?date={{ today|date:'Y-m-d' }}" class="btn-micro btn-micro-outline" title="Jump to today" data-calendar-nav="today">Today</a>
+      <a href="?date={{ next_week_str }}" class="icon-button" title="Next week" data-calendar-nav="next"><i class="fa-solid fa-chevron-right"></i></a>
+    </div>
+  </div>
+
+  <div class="calendar-week-strip" data-calendar-week-strip>
+    {% for day in calendar_week_days %}
+    <a href="?date={{ day.date_str }}" data-calendar-day data-date="{{ day.date_str }}" class="week-strip-day {% if day.is_selected %}is-selected{% endif %} {% if day.is_today %}is-today{% endif %}">
+      <span class="day-label">{{ day.label }}</span>
+      <span class="day-num">{{ day.day_number }}</span>
+      {% if day.has_event %}
+        <span class="day-dot" title="{{ day.event_count }} event(s)"></span>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Events on Selected Day Highlight Section -->
+<section class="card selected-day-card">
+  <div class="card-heading">
+    <div>
+      <p class="eyebrow">Events for</p>
+      <h3 data-events-selected-heading>{{ selected_date|date:"l, d F Y" }} {% if selected_date == today %}<span class="status-badge badge-info" style="font-size: 11px; margin-left: 6px;">Today</span>{% endif %}</h3>
+    </div>
+    {% if request.user.role == "ADMIN" %}
+      <a href="{% url 'dashboard:event_create' %}?date={{ selected_date_str }}" class="btn-micro" data-events-add-btn>
+        <i class="fa-solid fa-plus"></i> Add for this day
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="events-timeline" data-events-timeline>
+    {% for ev in selected_day_events %}
+    <div class="event-timeline-item {% if ev.is_recurring_daily %}event-recurring{% endif %}">
+      <div class="event-time-badge" style="width: auto; min-width: 78px; padding: 8px 10px;">
+        <i class="{% if ev.event_type == 'DINNER' %}fa-solid fa-utensils{% elif ev.event_type == 'MEETING' %}fa-solid fa-users{% elif ev.event_type == 'MAINTENANCE' %}fa-solid fa-screwdriver-wrench{% elif ev.event_type == 'SPORTS' %}fa-solid fa-volleyball{% elif ev.event_type == 'CELEBRATION' %}fa-solid fa-cake-candles{% else %}fa-regular fa-calendar-check{% endif %}"></i>
+        <span>{{ ev.formatted_time_range }}</span>
+      </div>
+      <div class="event-info">
+        <div class="event-title-row">
+          <h4>{{ ev.title }}</h4>
+          <div class="event-badges">
+            {% if ev.audience == "WARDEN_ONLY" %}
+              <span class="status-badge" style="background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; font-size: 10px; padding: 2px 7px;"><i class="fa-solid fa-user-shield" style="font-size: 8px; margin-right: 3px;"></i>Warden Only</span>
+            {% elif request.user.role != "STUDENT" %}
+              <span class="status-badge" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 10px; padding: 2px 7px;"><i class="fa-solid fa-users" style="font-size: 8px; margin-right: 3px;"></i>All</span>
+            {% endif %}
+            {% if ev.is_recurring_daily %}
+              <span class="status-badge badge-warning" title="Standard daily scheduled event"><i class="fa-solid fa-repeat" style="font-size: 9px; margin-right: 3px;"></i>Daily dinner</span>
+            {% else %}
+              <span class="status-badge badge-info">{{ ev.get_event_type_display }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <p class="event-meta">
+          <span><i class="fa-solid fa-location-dot"></i> {{ ev.location }}</span>
+          {% if ev.created_by %}
+            <span><i class="fa-solid fa-user-shield"></i> {{ ev.created_by.get_full_name|default:ev.created_by.username }}</span>
+          {% endif %}
+        </p>
+        {% if ev.description %}
+          <p class="event-desc">{{ ev.description }}</p>
+        {% endif %}
+      </div>
+      {% if request.user.role == "ADMIN" %}
+      <div class="event-item-actions">
+        <a href="{% url 'dashboard:event_edit' ev.pk %}?date={{ selected_date_str }}" class="action-btn action-btn-edit" title="Edit this event"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
+        {% if not ev.is_recurring_daily %}
+          <a href="{% url 'dashboard:event_delete' ev.pk %}?date={{ selected_date_str }}" class="action-btn action-btn-delete" title="Delete event"><i class="fa-regular fa-trash-can"></i></a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% empty %}
+    <div class="empty-events-box">
+      <i class="fa-regular fa-calendar-check" style="font-size: 32px; color: #94a3b8; margin-bottom: 8px;"></i>
+      <p>No special events scheduled for this day.</p>
+      {% if request.user.role == "ADMIN" %}
+        <a href="{% url 'dashboard:event_create' %}?date={{ selected_date_str }}" class="btn-micro btn-micro-outline" style="margin-top: 8px;">Schedule an event</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- All Scheduled Events Directory Table -->
+<section class="card table-card">
+  <div class="card-heading" style="padding: 16px 20px 0;">
+    <div>
+      <p class="eyebrow">Directory</p>
+      <h3>All Scheduled Hostel Events</h3>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Event Title</th>
+          <th>Type</th>
+          <th>Audience</th>
+          <th>Schedule</th>
+          <th>Location</th>
+          <th>Organizer</th>
+          {% if request.user.role == "ADMIN" %}
+            <th>Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for ev in events %}
+        <tr>
+          <td>
+            <strong>{{ ev.title }}</strong>
+            {% if ev.description %}
+              <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">{{ ev.description|truncatechars:50 }}</div>
+            {% endif %}
+          </td>
+          <td>
+            {% if ev.is_recurring_daily %}
+              <span class="status-badge badge-warning"><i class="fa-solid fa-repeat" style="font-size: 9px; margin-right: 3px;"></i>Everyday</span>
+            {% else %}
+              <span class="status-badge badge-info">{{ ev.get_event_type_display }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if ev.audience == "WARDEN_ONLY" %}
+              <span class="status-badge" style="background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8;"><i class="fa-solid fa-user-shield" style="font-size: 9px; margin-right: 3px;"></i>Warden Only</span>
+            {% else %}
+              <span class="status-badge" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;"><i class="fa-solid fa-users" style="font-size: 9px; margin-right: 3px;"></i>All Residents</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if ev.is_recurring_daily %}
+              <span style="font-weight: 600;">Daily · {{ ev.formatted_time_range }}</span>
+            {% else %}
+              <span>{{ ev.event_date|date:"d M Y" }} · {{ ev.formatted_time_range }}</span>
+            {% endif %}
+          </td>
+          <td>{{ ev.location }}</td>
+          <td>{{ ev.created_by.get_full_name|default:"Hostel Administration" }}</td>
+          {% if request.user.role == "ADMIN" %}
+          <td>
+            <div class="action-buttons">
+              <a href="{% url 'dashboard:event_edit' ev.pk %}" class="action-btn action-btn-edit" title="Edit event"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
+              {% if not ev.is_recurring_daily %}
+                <a href="{% url 'dashboard:event_delete' ev.pk %}" class="action-btn action-btn-delete" title="Delete event"><i class="fa-regular fa-trash-can"></i></a>
+              {% endif %}
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{% if request.user.role == 'ADMIN' %}7{% else %}6{% endif %}" style="text-align: center; color: var(--muted); padding: 24px;">No events found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

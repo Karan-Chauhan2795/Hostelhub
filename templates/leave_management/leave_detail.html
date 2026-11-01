@@ -1,3 +1,27 @@
-{% extends "base.html" %}
-{% block title %}Leave Request | HostelHub{% endblock %}
-{% block content %}<section class="page-card"><p class="eyebrow">Leave request</p><h1>{{ object.get_status_display }}</h1><dl class="detail-list"><div><dt>From</dt><dd>{{ object.start_date|date:"d M Y" }}</dd></div><div><dt>To</dt><dd>{{ object.end_date|date:"d M Y" }}</dd></div><div><dt>Reason</dt><dd>{{ object.reason }}</dd></div></dl></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Leave Request #{{ object.pk }} | HostelHub{% endblock %}
+{% block content %}
+<section class="management-header">
+  <div>
+    <p class="eyebrow">Leave details</p>
+    <h2>Leave Request #{{ object.pk }}</h2>
+  </div>
+  <a class="btn btn-secondary" href="{% url 'leave_management:leave_list' %}">
+    <i class="fa-solid fa-arrow-left"></i> Back to leave list
+  </a>
+</section>
+
+<section class="page-card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <h3 style="margin:0;">{{ object.student }} (Roll: {{ object.student.roll_number }})</h3>
+    <span class="status-pill">{{ object.get_status_display }}</span>
+  </div>
+  <dl class="detail-list">
+    <div><dt>Room</dt><dd>{{ object.student.room|default:"No Room Allocated" }}</dd></div>
+    <div><dt>From</dt><dd>{{ object.start_date|date:"d M Y" }}</dd></div>
+    <div><dt>To</dt><dd>{{ object.end_date|date:"d M Y" }}</dd></div>
+    <div><dt>Reason</dt><dd>{{ object.reason }}</dd></div>
+    <div><dt>Submitted On</dt><dd>{{ object.created_at|date:"d M Y, H:i" }}</dd></div>
+  </dl>
+</section>
+{% endblock %}

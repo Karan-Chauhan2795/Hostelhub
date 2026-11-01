@@ -175,3 +175,26 @@ class RoomAPITests(TestCase):
         response = self.client.delete(f"/rooms/api/{self.room_2.pk}/")
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Room.objects.filter(pk=self.room_2.pk).exists())
+    def test_web_ui_room_delete_view_and_protection(self):
+        self.client.force_login(self.admin)
+        # GET confirmation page
+        response = self.client.get(f"/rooms/{self.room_2.pk}/delete/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "rooms/room_confirm_delete.html")
+
+        # Deleting room with active resident via POST is prevented
+        Student.objects.create(
+            user=self.student_user,
+            roll_number="STUDENT-002",
+            course="Computer Science",
+            room=self.room_1,
+        )
+        post_res = self.client.post(f"/rooms/{self.room_1.pk}/delete/")
+        self.assertEqual(post_res.status_code, 302)
+        self.assertTrue(Room.objects.filter(pk=self.room_1.pk).exists())
+
+        # Deleting empty room_2 succeeds
+        post_res = self.client.post(f"/rooms/{self.room_2.pk}/delete/")
+        self.assertEqual(post_res.status_code, 302)
+        self.assertFalse(Room.objects.filter(pk=self.room_2.pk).exists())
+

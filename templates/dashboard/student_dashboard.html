@@ -2,17 +2,270 @@
 {% block title %}Student Dashboard | HostelHub{% endblock %}
 {% block content %}
 <section class="dashboard-welcome">
-    <div><p class="eyebrow">Student dashboard · 2026–27</p><h2>Good morning, {{ request.user.get_full_name|default:request.user.username }}.</h2><p>Here’s everything happening with your HostelHub stay today.</p><div class="welcome-actions"><a class="btn btn-light" href="{% url 'leave_management:leave_apply' %}"><i class="fa-solid fa-plane-departure"></i>Apply for leave</a><a class="btn btn-welcome-outline" href="{% url 'complaints:complaint_management' %}"><i class="fa-regular fa-message"></i>Complaints</a></div></div>
-    <div class="welcome-orb"><i class="fa-solid fa-house"></i><span>Home<br><strong>{{ student_room }}</strong></span></div>
+    <div>
+        <p class="eyebrow">Student dashboard · 2026–27</p>
+        <h2>Good morning, {{ request.user.get_full_name|default:request.user.username }}.</h2>
+        <p>Here’s everything happening with your HostelHub stay today.</p>
+        <div class="welcome-actions"><a class="btn btn-light" href="{% url 'leave_management:leave_apply' %}"><i
+                    class="fa-solid fa-plane-departure"></i>Apply for leave</a><a class="btn btn-welcome-outline"
+                href="{% url 'complaints:complaint_management' %}"><i class="fa-regular fa-message"></i>Complaints</a>
+        </div>
+    </div>
+    <div class="welcome-orb"><i class="fa-solid fa-house"></i><span>Home<br><strong>{{ student_room }}</strong></span>
+    </div>
 </section>
 <section class="stats-grid">
     {% for item in stats %}
     <article class="card stat-card stat-card-modern">
-        <div class="stat-icon stat-icon-{{ forloop.counter }}"><i class="{% if forloop.counter == 1 %}fa-solid fa-wallet{% elif forloop.counter == 2 %}fa-solid fa-key{% elif forloop.counter == 3 %}fa-regular fa-message{% else %}fa-solid fa-plane-departure{% endif %}"></i></div>
-        <div><h3>{{ item.title }}</h3><div class="stat-value">{{ item.value }}</div><span class="stat-change">{{ item.change }}</span></div>
+        <div class="stat-icon stat-icon-{{ forloop.counter }}"><i
+                class="{% if forloop.counter == 1 %}fa-solid fa-wallet{% elif forloop.counter == 2 %}fa-solid fa-key{% elif forloop.counter == 3 %}fa-regular fa-message{% else %}fa-solid fa-plane-departure{% endif %}"></i>
+        </div>
+        <div>
+            <h3>{{ item.title }}</h3>
+            <div class="stat-value">{{ item.value }}</div><span class="stat-change">{{ item.change }}</span>
+        </div>
     </article>
     {% endfor %}
 </section>
-<section class="dashboard-grid student-dashboard-grid"><article class="card chart-card"><div class="card-heading"><div><p class="eyebrow">Monthly overview</p><h3>Your stay at a glance</h3></div><span class="soft-pill">{{ calendar_current_month }}</span></div><div class="chart-placeholder"><div class="chart-y"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div><div class="chart-bars"><i style="height:42%"></i><i style="height:67%"></i><i style="height:54%"></i><i style="height:88%"></i><i style="height:70%"></i><i style="height:92%"></i><i style="height:76%"></i></div></div><div class="chart-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div></article><article class="card calendar-card"><div class="card-heading"><div><p class="eyebrow">This week</p><h3>{{ calendar_month_year }}</h3></div><button type="button" class="icon-button"><i class="fa-solid fa-ellipsis"></i></button></div><div class="calendar-week">{% for day in calendar_week_days %}<span>{{ day.label }}</span>{% endfor %}</div><div class="calendar-days">{% for day in calendar_week_days %}<span class="{% if day.is_today %}today{% endif %}" title="{{ day.date|date:'d M Y' }}">{{ day.day_number }}</span>{% endfor %}</div><div class="next-event"><i class="fa-solid fa-utensils"></i><span><strong>Community dinner</strong><small>Today · 7:30 PM</small></span></div></article></section>
-<section class="dashboard-grid activity-layout"><article class="card"><div class="card-heading"><div><p class="eyebrow">Stay updated</p><h3>Announcements</h3></div><a href="{% url 'notices:notice_list' %}" class="text-link">View all</a></div><ul class="activity-list">{% for notice in announcements %}<li><span class="activity-icon"><i class="fa-regular fa-bell"></i></span><span><strong>{{ notice.clean_display_title }}</strong><small>{{ notice.created_at|date:"d M Y" }}</small></span><i class="fa-solid fa-arrow-right"></i></li>{% empty %}<li><span>No notices have been published yet.</span></li>{% endfor %}</ul></article><article class="card progress-card"><p class="eyebrow">Profile health</p><h3>Your profile is {{ profile_completion }}% complete</h3><p>Keep your details complete for a smoother HostelHub experience.</p><div class="progress-track"><span style="width: {{ profile_completion }}%"></span></div><div class="progress-caption"><strong>{{ profile_completion }}% complete</strong><a href="{% url 'accounts:profile' %}">Complete profile</a></div></article></section>
+<!-- Row 1: Stay Updated & Profile Health (Even Two-Column Grid) -->
+<section class="dashboard-grid activity-layout">
+    <!-- Announcements Card -->
+    <article class="card announcements-card">
+        <div class="card-heading">
+            <div>
+                <p class="eyebrow">Stay updated</p>
+                <h3>Hostel Announcements</h3>
+            </div>
+            <a href="{% url 'notices:notice_list' %}" class="btn-micro btn-micro-outline" style="font-size: 11px; padding: 5px 10px; text-decoration: none;">View all <i class="fa-solid fa-arrow-right" style="font-size: 10px; margin-left: 2px;"></i></a>
+        </div>
+        <ul class="activity-list">
+            {% for notice in announcements %}
+            <li>
+                <a href="{% url 'notices:notice_list' %}" class="activity-item" title="View notice: {{ notice.clean_display_title|default:notice.title }}">
+                    <span class="activity-icon"><i class="fa-regular fa-bell"></i></span>
+                    <span>
+                        <strong>{{ notice.clean_display_title|default:notice.title }}</strong>
+                        <small><i class="fa-regular fa-clock" style="margin-right: 3px;"></i>{{ notice.created_at|date:"d M Y" }}</small>
+                    </span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </li>
+            {% empty %}
+            <li class="empty-activity-notice">
+                <span class="activity-icon" style="background: #f1f5f9; color: #94a3b8;"><i class="fa-regular fa-circle-check"></i></span>
+                <span><strong>No new announcements</strong><small>You're completely up to date with hostel notices.</small></span>
+            </li>
+            {% endfor %}
+        </ul>
+    </article>
+
+    <!-- Profile Health Card -->
+    <article class="card progress-card">
+        <div class="progress-card-header">
+            <div>
+                <p class="eyebrow">Profile health</p>
+                <h3>{{ profile_completion }}% complete</h3>
+            </div>
+            <a href="{% url 'accounts:profile' %}" class="progress-card-link">
+                View profile <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+        <p>Institutional record status for your HostelHub account.</p>
+        <div class="progress-track" style="--progress: {{ profile_completion|default:0 }}%;"><span style="width: var(--progress);"></span></div>
+        <div class="progress-caption">
+            <strong><i class="fa-solid fa-shield-check" style="margin-right: 4px;"></i>{{ profile_completion }}% verified</strong>
+            <span class="caption-muted">Institutional Records</span>
+        </div>
+        <div class="profile-advisory">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+                <strong>Need to update details?</strong>
+                <span>Records are managed administratively. Submit updates or documents directly to the hostel office administrator.</span>
+            </div>
+        </div>
+    </article>
+</section>
+
+<!-- Row 2: Recent Activity (Leaves & Complaints) -->
+<section class="page-grid" style="margin-top: 22px;">
+    <article class="card activity-card" style="grid-column: 1 / -1;">
+        <div class="card-heading">
+            <div>
+                <p class="eyebrow">Recent records</p>
+                <h3>My Requests & Activity</h3>
+            </div>
+            <div class="activity-quick-actions">
+                <a href="{% url 'leave_management:leave_apply' %}" class="btn-micro" title="New leave request"><i class="fa-solid fa-plus"></i> Leave</a>
+                <a href="{% url 'complaints:complaint_management' %}" class="btn-micro btn-micro-outline" title="New complaint"><i class="fa-solid fa-plus"></i> Complaint</a>
+            </div>
+        </div>
+        <ul class="activity-list student-status-list">
+            {% for leave in recent_leaves %}
+            <li>
+                <a href="{% url 'leave_management:leave_list' %}" class="activity-item">
+                    <span class="activity-icon activity-icon-orange"><i class="fa-solid fa-plane-departure"></i></span>
+                    <span>
+                        <strong>Leave: {{ leave.reason|truncatechars:38 }}</strong>
+                        <small>{{ leave.start_date|date:"d M" }} – {{ leave.end_date|date:"d M Y" }}</small>
+                    </span>
+                    <span class="status-badge {% if leave.status == 'APPROVED' %}badge-success{% elif leave.status == 'REJECTED' %}badge-danger{% else %}badge-warning{% endif %}">
+                        {{ leave.get_status_display }}
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+
+            {% for complaint in recent_complaints %}
+            <li>
+                <a href="{% url 'complaints:complaint_management' %}" class="activity-item">
+                    <span class="activity-icon activity-icon-purple"><i class="fa-regular fa-message"></i></span>
+                    <span>
+                        <strong>Complaint: {{ complaint.subject|truncatechars:38 }}</strong>
+                        <small><i class="fa-regular fa-clock" style="margin-right: 3px;"></i>{{ complaint.created_at|date:"d M Y" }}</small>
+                    </span>
+                    <span class="status-badge {% if complaint.status == 'RESOLVED' %}badge-success{% elif complaint.status == 'IN_PROGRESS' %}badge-info{% else %}badge-warning{% endif %}">
+                        {{ complaint.get_status_display }}
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if not recent_leaves and not recent_complaints %}
+            <li class="empty-activity-notice">
+                <span class="activity-icon" style="background: #f1f5f9; color: #94a3b8;"><i class="fa-solid fa-inbox"></i></span>
+                <span><strong>No recent requests</strong><small>When you apply for leave or submit complaints, they will appear here.</small></span>
+            </li>
+            {% endif %}
+        </ul>
+    </article>
+</section>
+
+<!-- Row 3: Schedule Calendar & Day Events List (Matching Warden Portal Layout Perfectly) -->
+<section class="dashboard-grid activity-layout" style="margin-top: 22px;">
+    <!-- Calendar Card for Student -->
+    <article class="card calendar-card" id="student-calendar-card" data-calendar-card data-api-url="{% url 'dashboard:calendar_day_events_api' %}">
+        <div class="card-heading">
+            <div>
+                <p class="eyebrow" data-calendar-selected-title>Schedule · {{ selected_date|date:"D, d M" }}</p>
+                <h3 data-calendar-month-year>{{ calendar_month_year }}</h3>
+            </div>
+            <div class="calendar-menu-wrapper" data-calendar-menu>
+                <a href="?date={{ prev_week_str }}" class="icon-button-mini" title="Previous week" data-calendar-nav="prev"><i class="fa-solid fa-chevron-left"></i></a>
+                <a href="?date={{ today|date:'Y-m-d' }}" class="btn-calendar-today" title="Jump to today" data-calendar-nav="today">Today</a>
+                <a href="?date={{ next_week_str }}" class="icon-button-mini" title="Next week" data-calendar-nav="next"><i class="fa-solid fa-chevron-right"></i></a>
+                <button type="button" class="icon-button" data-calendar-toggle aria-label="Calendar options" title="Quick schedule actions">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+                <div class="calendar-dropdown" data-calendar-dropdown>
+                    <a href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" data-calendar-viewall-link>
+                        <i class="fa-regular fa-calendar-days"></i> View all events
+                    </a>
+                    <a href="{% url 'leave_management:leave_apply' %}">
+                        <i class="fa-solid fa-plane-departure"></i> Apply for leave
+                    </a>
+                    <a href="{% url 'leave_management:leave_list' %}">
+                        <i class="fa-regular fa-calendar-check"></i> My leave schedule
+                    </a>
+                    <a href="{% url 'notices:notice_list' %}">
+                        <i class="fa-regular fa-bell"></i> Hostel notices
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="calendar-week">{% for day in calendar_week_days %}<span>{{ day.label }}</span>{% endfor %}</div>
+        <div class="calendar-days" data-calendar-days-container>
+            {% for day in calendar_week_days %}
+            <a href="?date={{ day.date_str }}" data-calendar-day data-date="{{ day.date_str }}" class="calendar-day-btn {% if day.is_selected %}is-selected{% endif %} {% if day.is_today %}today{% endif %}" title="{{ day.date|date:'d M Y' }} ({{ day.event_count }} event{{ day.event_count|pluralize }})">
+                <span>{{ day.day_number }}</span>
+                {% if day.has_event %}
+                    <span class="day-dot"></span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Dynamic Highlight Container for Selected Day's Primary Highlight -->
+        <div data-calendar-next-event-container>
+            {% if next_event %}
+            <div class="next-event next-event-interactive" style="cursor: pointer;" data-href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" title="Click to view in Event Management">
+                <i class="{% if next_event.event_type == 'DINNER' %}fa-solid fa-utensils{% elif next_event.event_type == 'MEETING' %}fa-solid fa-users{% elif next_event.event_type == 'MAINTENANCE' %}fa-solid fa-screwdriver-wrench{% elif next_event.event_type == 'SPORTS' %}fa-solid fa-volleyball{% elif next_event.event_type == 'CELEBRATION' %}fa-solid fa-cake-candles{% else %}fa-regular fa-calendar-check{% endif %}"></i>
+                <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <strong>{{ next_event.title }}</strong>
+                        {% if next_event.is_recurring_daily %}
+                            <span class="status-badge badge-warning" style="font-size: 9.5px; padding: 2px 7px;">Daily</span>
+                        {% endif %}
+                    </div>
+                    <small>
+                        {% if selected_date == today %}Today{% else %}{{ selected_date|date:"D, d M" }}{% endif %} · {{ next_event.formatted_time_range }} · {{ next_event.location }}
+                    </small>
+                    {% if next_event.description %}
+                        <span class="event-inline-desc">{{ next_event.description|truncatechars:75 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="next-event next-event-empty">
+                <i class="fa-regular fa-circle-check" style="background:#ecfdf5; color:#059669;"></i>
+                <div>
+                    <strong>No events on this day</strong>
+                    <small>{{ selected_date|date:"l, d M Y" }}</small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="calendar-card-footer">
+            <a href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" class="btn-calendar-link" data-calendar-footer-link>
+                <i class="fa-regular fa-calendar-days" style="margin-right: 4px;"></i>Full calendar & events schedule <i class="fa-solid fa-arrow-right" style="font-size: 10px; margin-left: 3px;"></i>
+            </a>
+        </div>
+    </article>
+
+    <!-- Student Events Schedule Card: Displays ALL events on selected date (Both Recurring & Specific) -->
+    <article class="card readiness-card" data-student-events-card>
+        <div class="card-heading">
+            <div>
+                <p class="eyebrow">Scheduled events</p>
+                <h3 data-student-events-title>Events for {{ selected_date|date:"D, d M" }}</h3>
+            </div>
+            <a href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" class="btn-micro btn-micro-outline" data-student-full-events-btn style="font-size: 11px; padding: 5px 10px; text-decoration: none;"><i class="fa-regular fa-calendar-days" style="margin-right: 4px;"></i>Full schedule <i class="fa-solid fa-arrow-right" style="font-size: 10px; margin-left: 2px;"></i></a>
+        </div>
+        <ul class="readiness-activity-list" data-student-events-list>
+            {% for ev in selected_day_events %}
+            <li class="readiness-item-wrap">
+                <div class="readiness-item" style="cursor: pointer;" data-href="{% url 'dashboard:event_list' %}?date={{ selected_date_str }}" title="Click to view in Event Management">
+                    <span class="readiness-icon {% if ev.event_type == 'DINNER' %}readiness-icon-orange{% elif ev.event_type == 'MEETING' %}readiness-icon-blue{% else %}readiness-icon-teal{% endif %}">
+                        <i class="{% if ev.event_type == 'DINNER' %}fa-solid fa-utensils{% elif ev.event_type == 'MEETING' %}fa-solid fa-users{% elif ev.event_type == 'MAINTENANCE' %}fa-solid fa-screwdriver-wrench{% elif ev.event_type == 'SPORTS' %}fa-solid fa-volleyball{% elif ev.event_type == 'CELEBRATION' %}fa-solid fa-cake-candles{% else %}fa-regular fa-calendar-check{% endif %}"></i>
+                    </span>
+                    <div class="readiness-details">
+                        <div class="readiness-title-row">
+                            <strong>{{ ev.title }}</strong>
+                        </div>
+                        <div class="readiness-tags-row">
+                            {% if ev.is_recurring_daily %}
+                                <span class="status-badge badge-warning" style="font-size: 10px; padding: 2px 7px;"><i class="fa-solid fa-repeat" style="font-size: 8px; margin-right: 3px;"></i>Daily</span>
+                            {% else %}
+                                <span class="status-badge badge-info" style="font-size: 10px; padding: 2px 7px;">{{ ev.get_event_type_display }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="readiness-meta">
+                            <span><i class="fa-regular fa-clock"></i> {{ ev.formatted_time_range }}</span>
+                            <span><i class="fa-solid fa-location-dot"></i> {{ ev.location }}</span>
+                        </div>
+                        {% if ev.description %}
+                            <p class="readiness-desc">{{ ev.description|truncatechars:120 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% empty %}
+            <li class="empty-activity-notice">
+                <span class="activity-icon" style="background:#f1f5f9; color:#94a3b8;"><i class="fa-regular fa-circle-check"></i></span>
+                <span><strong>No events scheduled for this day</strong><small>Enjoy your day or view the full monthly calendar for upcoming events.</small></span>
+            </li>
+            {% endfor %}
+        </ul>
+    </article>
+</section>
 {% endblock %}

@@ -72,6 +72,13 @@
               {% else %}
                 <span style="color: var(--muted); font-style: italic; font-size: 11px;">No description provided</span>
               {% endif %}
+              {% if complaint.student.user == request.user and complaint.status == "PENDING" %}
+                <div style="margin-top: 4px;">
+                  <a href="{% url 'complaints:complaint_update' complaint.pk %}" class="text-link" style="font-size: 11.5px;">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit complaint
+                  </a>
+                </div>
+              {% endif %}
             </div>
           </td>
           <td style="vertical-align: middle;">
